@@ -748,7 +748,7 @@ function renderTasks() {
   if (state._taskFilters.priority) list = list.filter(t => t.priority === state._taskFilters.priority);
   if (state._taskFilters.search)   list = list.filter(t => t.name.toLowerCase().includes(state._taskFilters.search.toLowerCase()));
   const tbody = document.getElementById('tasks-tbody');
-  if (\!list.length) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text3);">No hay tareas.</td></tr>`; return; }
+  if (!list.length) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text3);">No hay tareas.</td></tr>`; return; }
   tbody.innerHTML = list.map(t => {
     const obj = state.objectives.find(o => o.id === t.objId);
     return `<tr onclick="openEditTask('${t.id}')" style="cursor:pointer;">
@@ -766,7 +766,7 @@ function renderTasks() {
 // ==================== TEAM VIEW ====================
 function renderTeam() {
   const grid = document.getElementById('team-grid');
-  if (\!state.team.length) { grid.innerHTML = '<p style="color:var(--text3);">No hay miembros.</p>'; return; }
+  if (!state.team.length) { grid.innerHTML = '<p style="color:var(--text3);">No hay miembros.</p>'; return; }
   const taskCount = m => state.tasks.filter(t => t.assignee === m.name).length;
   const doneCount = m => state.tasks.filter(t => t.assignee === m.name && t.status === 'completada').length;
   grid.innerHTML = state.team.map(m => `
@@ -785,7 +785,7 @@ function renderTimeline() {
   const container = document.getElementById('timeline-container');
   container.innerHTML = quarters.map(q => {
     const objs = state.objectives.filter(o => o.quarter === q);
-    if (\!objs.length) return '';
+    if (!objs.length) return '';
     return `<div style="margin-bottom:2rem;">
       <div style="font-family:var(--font-d);font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">${q}</div>
       <div style="display:flex;flex-direction:column;gap:10px;">
@@ -818,7 +818,7 @@ function openAddObjective() {
 }
 function openEditObjective(id) {
   const o = state.objectives.find(x => x.id === id);
-  if (\!o) return;
+  if (!o) return;
   state._editObjId = id;
   document.getElementById('obj-modal-title').textContent = 'Editar Objetivo';
   document.getElementById('obj-name').value = o.name;
@@ -831,7 +831,7 @@ function openEditObjective(id) {
 }
 function saveObjective() {
   const name = document.getElementById('obj-name').value.trim();
-  if (\!name) { alert('El nombre es requerido.'); return; }
+  if (!name) { alert('El nombre es requerido.'); return; }
   if (state._editObjId) {
     const o = state.objectives.find(x => x.id === state._editObjId);
     if (o) { o.name = name; o.desc = document.getElementById('obj-desc').value.trim(); o.quarter = document.getElementById('obj-quarter').value; o.color = document.getElementById('obj-color').value; o.owner = document.getElementById('obj-owner').value.trim(); }
@@ -841,10 +841,10 @@ function saveObjective() {
   save(); closeModal('modal-objective'); renderCurrentView();
 }
 function deleteObjective() {
-  if (\!state._editObjId) return;
-  if (\!confirm('¿Eliminar este objetivo y sus KRs?')) return;
-  state.objectives = state.objectives.filter(o => o.id \!== state._editObjId);
-  state.tasks = state.tasks.filter(t => t.objId \!== state._editObjId);
+  if (!state._editObjId) return;
+  if (!confirm('¿Eliminar este objetivo y sus KRs?')) return;
+  state.objectives = state.objectives.filter(o => o.id !== state._editObjId);
+  state.tasks = state.tasks.filter(t => t.objId !== state._editObjId);
   save(); closeModal('modal-objective'); renderCurrentView();
 }
 
@@ -864,7 +864,7 @@ function openAddKR(objId) {
 function openEditKR(objId, krId) {
   const o = state.objectives.find(x => x.id === objId);
   const kr = o && o.krs.find(k => k.id === krId);
-  if (\!kr) return;
+  if (!kr) return;
   state._editKrObjId = objId; state._editKrId = krId;
   document.getElementById('kr-modal-title').textContent = 'Editar Key Result';
   document.getElementById('kr-name').value = kr.name;
@@ -878,9 +878,9 @@ function openEditKR(objId, krId) {
 }
 function saveKR() {
   const name = document.getElementById('kr-name').value.trim();
-  if (\!name) { alert('La descripción es requerida.'); return; }
+  if (!name) { alert('La descripción es requerida.'); return; }
   const o = state.objectives.find(x => x.id === state._editKrObjId);
-  if (\!o) return;
+  if (!o) return;
   const data = { name, start: +document.getElementById('kr-start').value||0, target: +document.getElementById('kr-target').value||100, current: +document.getElementById('kr-current').value||0, unit: document.getElementById('kr-unit').value.trim(), status: document.getElementById('kr-status').value };
   if (state._editKrId) { const kr = o.krs.find(k => k.id === state._editKrId); if (kr) Object.assign(kr, data); }
   else { o.krs.push({ id: uid(), ...data }); }
@@ -888,9 +888,9 @@ function saveKR() {
 }
 function deleteKR() {
   const o = state.objectives.find(x => x.id === state._editKrObjId);
-  if (\!o || \!state._editKrId) return;
-  if (\!confirm('¿Eliminar este Key Result?')) return;
-  o.krs = o.krs.filter(k => k.id \!== state._editKrId);
+  if (!o || !state._editKrId) return;
+  if (!confirm('¿Eliminar este Key Result?')) return;
+  o.krs = o.krs.filter(k => k.id !== state._editKrId);
   save(); closeModal('modal-kr'); renderCurrentView();
 }
 
@@ -910,7 +910,7 @@ function openAddTask(objId) {
 }
 function openEditTask(id) {
   const t = state.tasks.find(x => x.id === id);
-  if (\!t) return;
+  if (!t) return;
   state._editTaskId = id;
   document.getElementById('task-modal-title').textContent = 'Editar Tarea';
   document.getElementById('task-name').value = t.name;
@@ -926,7 +926,7 @@ function openEditTask(id) {
 }
 function saveTask() {
   const name = document.getElementById('task-name').value.trim();
-  if (\!name) { alert('El nombre es requerido.'); return; }
+  if (!name) { alert('El nombre es requerido.'); return; }
   const data = { name, desc: document.getElementById('task-desc').value.trim(), assignee: document.getElementById('task-assignee').value.trim(), due: document.getElementById('task-due').value, priority: document.getElementById('task-priority').value, status: document.getElementById('task-status').value, objId: document.getElementById('task-obj').value };
   if (state._editTaskId) { const t = state.tasks.find(x => x.id === state._editTaskId); if (t) Object.assign(t, data); }
   else { state.tasks.push({ id: uid(), ...data }); }
@@ -934,9 +934,9 @@ function saveTask() {
   if (SHEET_URL) pushToSheets();
 }
 function deleteTask() {
-  if (\!state._editTaskId) return;
-  if (\!confirm('¿Eliminar esta tarea?')) return;
-  state.tasks = state.tasks.filter(t => t.id \!== state._editTaskId);
+  if (!state._editTaskId) return;
+  if (!confirm('¿Eliminar esta tarea?')) return;
+  state.tasks = state.tasks.filter(t => t.id !== state._editTaskId);
   save(); closeModal('modal-task'); renderCurrentView();
 }
 
@@ -949,14 +949,14 @@ function openAddMember() {
 }
 function saveMember() {
   const name = document.getElementById('member-name').value.trim();
-  if (\!name) { alert('El nombre es requerido.'); return; }
+  if (!name) { alert('El nombre es requerido.'); return; }
   state.team.push({ id: uid(), name, role: document.getElementById('member-role').value.trim(), email: document.getElementById('member-email').value.trim(), color: document.getElementById('member-color').value });
   save(); closeModal('modal-member'); renderTeam();
 }
 
 function toggleObj(id) {
   const o = state.objectives.find(x => x.id === id);
-  if (o) { o.open = \!o.open; renderOKRs(); }
+  if (o) { o.open = !o.open; renderOKRs(); }
 }
 
 // Close modal on backdrop click
