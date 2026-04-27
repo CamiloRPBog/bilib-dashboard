@@ -455,6 +455,94 @@ let state = { objectives:[], tasks:[], team:[], _editObjId:null, _editKrId:null,
 let SHEET_URL = '';
 let autoSyncTimer = null;
 
+// ==================== SEED DATA ====================
+const SEED = {
+  team: [
+    {id:'t1', name:'Camilo', role:'CEO · BILIB / NIDO / Educación', email:'camiloroncanciop@gmail.com', color:'#00e5a0'},
+    {id:'t2', name:'Juliana', role:'Co-fundadora · FP Lead',         email:'', color:'#a78bfa'},
+  ],
+  objectives: [
+    // ── JULIANA ──
+    {id:'o_fp', name:'FP — Pipeline activo de ventas', desc:'Cotizaciones activas, seguimiento a clientes y cierre de ventas. Proyecto de Juliana.', quarter:'Q1', color:'#a78bfa', owner:'Juliana', open:false, krs:[
+      {id:'kfp1', name:'Cotizaciones enviadas Q1',    start:0, target:15, current:12, unit:'cotizaciones', status:'on-track'},
+      {id:'kfp2', name:'Ventas cerradas Q1',          start:0, target:5,  current:0,  unit:'ventas',       status:'at-risk'},
+      {id:'kfp3', name:'Clientes nuevos contactados', start:0, target:8,  current:5,  unit:'clientes',     status:'on-track'},
+    ]},
+    {id:'o_jh', name:'Carrera JH — CV y LinkedIn', desc:'Finalizar el perfil profesional de Juliana.', quarter:'Q1', color:'#ec4899', owner:'Juliana', open:false, krs:[
+      {id:'kjh1', name:'CV finalizado', start:0, target:1, current:0, unit:'CV',      status:'on-track'},
+      {id:'kjh2', name:'LinkedIn activo', start:0, target:1, current:0, unit:'perfil', status:'on-track'},
+    ]},
+    // ── CAMILO ──
+    {id:'o_bilib', name:'BILIB — Consolidar operación en USA', desc:'Crecer ventas corporativas y Etsy, definir futuro post-FP, lanzar iniciativas digitales.', quarter:'Q1', color:'#00e5a0', owner:'Camilo', open:false, krs:[
+      {id:'kb1', name:'Cerrar 5 clientes corporativos nuevos', start:0, target:5, current:0, unit:'clientes',  status:'on-track'},
+      {id:'kb2', name:'Definir modelo operación post-FP',      start:0, target:1, current:0, unit:'decisión',  status:'at-risk'},
+      {id:'kb3', name:'Lanzar campaña digital activa',         start:0, target:1, current:0, unit:'campaña',   status:'on-track'},
+    ]},
+    {id:'o_nido', name:'NIDO — Agente realtor AI con Jelou', desc:'Lanzar el agente AI en WhatsApp y conseguir los primeros realtors piloto.', quarter:'Q2', color:'#3b82f6', owner:'Camilo', open:false, krs:[
+      {id:'kn1', name:'Presentación a Luis Loaiza lista', start:0, target:1, current:0, unit:'presentación', status:'on-track'},
+      {id:'kn2', name:'Realtors piloto activos',          start:0, target:3, current:0, unit:'realtors',     status:'on-track'},
+      {id:'kn3', name:'Propuesta financiera aprobada',    start:0, target:1, current:1, unit:'propuesta',    status:'done'},
+    ]},
+    {id:'o_edu', name:'Educación IA LATAM — Estructurar empresa', desc:'Constituir la compañía en USA y definir el modelo de negocio para enseñanza de IA.', quarter:'Q2', color:'#f59e0b', owner:'Camilo', open:false, krs:[
+      {id:'ke1', name:'Compañía constituida en USA',    start:0, target:1, current:0, unit:'empresa',    status:'on-track'},
+      {id:'ke2', name:'Plan de negocios actualizado',   start:0, target:1, current:0, unit:'documento',  status:'on-track'},
+    ]},
+    {id:'o_per', name:'Personal — FLORES · Fotografía · UK Sales', desc:'Proyectos personales: distribuidor FLORES, proyectos de fotografía y ventas UK (Álvaro).', quarter:'Anual', color:'#ef4444', owner:'Camilo', open:false, krs:[
+      {id:'kp1', name:'Reunión con distribuidor FLORES',    start:0, target:1, current:0, unit:'reunión',  status:'on-track'},
+      {id:'kp2', name:'Proyecto videos Marcela lanzado',    start:0, target:1, current:0, unit:'proyecto', status:'on-track'},
+      {id:'kp3', name:'Propuesta UK Sales (aerosoles) lista', start:0, target:1, current:1, unit:'propuesta', status:'done'},
+    ]},
+  ],
+  tasks: [
+    // ── FP / JULIANA ──
+    {id:'tk1',  name:'Enviar cotización bolsas a Leonardo y Sandra',    desc:'',                                      assignee:'Juliana', due:'',           priority:'high',   status:'pendiente',   objId:'o_fp'},
+    {id:'tk2',  name:'Nuevas camisetas Vergara Legal',                  desc:'',                                      assignee:'Juliana', due:'',           priority:'medium', status:'pendiente',   objId:'o_fp'},
+    {id:'tk3',  name:'Enviar cotización bordados señora Brasilera',     desc:'',                                      assignee:'Juliana', due:'',           priority:'high',   status:'pendiente',   objId:'o_fp'},
+    {id:'tk4',  name:'Escribir a todos los que pidieron tarjetas',      desc:'',                                      assignee:'Juliana', due:'',           priority:'medium', status:'pendiente',   objId:'o_fp'},
+    {id:'tk5',  name:'Enviar a producción flags de Leonardo',           desc:'',                                      assignee:'Juliana', due:'',           priority:'medium', status:'pendiente',   objId:'o_fp'},
+    {id:'tk6',  name:'Mark & Jacky — seguimiento cotización',           desc:'Hacer seguimiento 5 de marzo',          assignee:'Juliana', due:'2026-03-05', priority:'high',   status:'pendiente',   objId:'o_fp'},
+    {id:'tk7',  name:'Cotización FAR / DTF',                            desc:'',                                      assignee:'Juliana', due:'2026-02-13', priority:'high',   status:'pendiente',   objId:'o_fp'},
+    {id:'tk8',  name:'Ask sample NEXT LEVEL to Sanmar (color BILIB)',   desc:'',                                      assignee:'Juliana', due:'2026-02-13', priority:'high',   status:'pendiente',   objId:'o_fp'},
+    {id:'tk9',  name:'Pedir logo a cliente',                            desc:'',                                      assignee:'Juliana', due:'2026-02-13', priority:'medium', status:'pendiente',   objId:'o_fp'},
+    {id:'tk10', name:'Armar cotización cliente nuevo',                  desc:'',                                      assignee:'Juliana', due:'2026-02-13', priority:'high',   status:'pendiente',   objId:'o_fp'},
+    {id:'tk11', name:'Fundación de perros — llamada seguimiento',       desc:'Llamar el 18 de marzo',                 assignee:'Juliana', due:'2026-03-18', priority:'medium', status:'pendiente',   objId:'o_fp'},
+    {id:'tk12', name:'Evento ROTARY',                                   desc:'',                                      assignee:'Juliana', due:'',           priority:'medium', status:'pendiente',   objId:'o_fp'},
+    {id:'tk13', name:'Tricia — Send PDF booklet to PIP',                desc:'',                                      assignee:'Juliana', due:'',           priority:'medium', status:'pendiente',   objId:'o_fp'},
+    {id:'tk14', name:'Vidal — seguimiento cotización',                  desc:'Hacer seguimiento el 5 de marzo',       assignee:'Juliana', due:'2026-03-05', priority:'medium', status:'pendiente',   objId:'o_fp'},
+    {id:'tk15', name:'ABN — enviar fotos de totebags',                  desc:'Enviar el 5 de marzo',                  assignee:'Juliana', due:'2026-03-05', priority:'medium', status:'pendiente',   objId:'o_fp'},
+    {id:'tk16', name:'Hablar con la veterinaria — link de pago',        desc:'',                                      assignee:'Juliana', due:'',           priority:'medium', status:'pendiente',   objId:'o_fp'},
+    // ── CARRERA JH ──
+    {id:'tk17', name:'Finalizar CV con ajustes de mentoría',            desc:'',                                      assignee:'Juliana', due:'',           priority:'high',   status:'en-progreso', objId:'o_jh'},
+    {id:'tk18', name:'Montar perfil LinkedIn',                          desc:'',                                      assignee:'Juliana', due:'',           priority:'medium', status:'pendiente',   objId:'o_jh'},
+    // ── BILIB / CAMILO ──
+    {id:'tk19', name:'Redactar solicitud negocio hasta octubre',        desc:'',                                      assignee:'Camilo',  due:'',           priority:'high',   status:'pendiente',   objId:'o_bilib'},
+    {id:'tk20', name:'Preguntar a FP qué pasa los meses mientras se vende', desc:'',                                  assignee:'Camilo',  due:'',           priority:'medium', status:'pendiente',   objId:'o_bilib'},
+    {id:'tk21', name:'Definir mail a Michelle sobre venta bajo variable', desc:'',                                    assignee:'Camilo',  due:'',           priority:'high',   status:'pendiente',   objId:'o_bilib'},
+    {id:'tk22', name:'Proyecto realidad virtual para las gafas',        desc:'',                                      assignee:'Camilo',  due:'',           priority:'low',    status:'en-progreso', objId:'o_bilib'},
+    {id:'tk23', name:'Campaña mailing Google Maps / revisar Twitter',   desc:'',                                      assignee:'Camilo',  due:'',           priority:'medium', status:'pendiente',   objId:'o_bilib'},
+    {id:'tk24', name:'Crear productos semanales o quincenales',         desc:'',                                      assignee:'Camilo',  due:'',           priority:'medium', status:'pendiente',   objId:'o_bilib'},
+    {id:'tk25', name:'Proyecto analítica BILIB',                        desc:'',                                      assignee:'Camilo',  due:'',           priority:'low',    status:'pendiente',   objId:'o_bilib'},
+    {id:'tk26', name:'Proyecto Aquiles — terminar excel y 2 tareas',   desc:'',                                      assignee:'Camilo',  due:'',           priority:'medium', status:'en-progreso', objId:'o_bilib'},
+    // ── NIDO ──
+    {id:'tk27', name:'Revisar propuesta con Tomás — ingresos y equilibrio', desc:'',                                  assignee:'Camilo',  due:'',           priority:'high',   status:'en-progreso', objId:'o_nido'},
+    {id:'tk28', name:'Incorporar cambios después de reunión con Tomás', desc:'',                                      assignee:'Camilo',  due:'2026-08-04', priority:'high',   status:'pendiente',   objId:'o_nido'},
+    {id:'tk29', name:'Preparar presentación a Luis Loaiza',             desc:'',                                      assignee:'Camilo',  due:'2026-09-04', priority:'high',   status:'pendiente',   objId:'o_nido'},
+    {id:'tk30', name:'Presentar a Luis Loaiza',                         desc:'',                                      assignee:'Camilo',  due:'',           priority:'high',   status:'pendiente',   objId:'o_nido'},
+    {id:'tk31', name:'JELOU BILIB — definir integración AI',            desc:'',                                      assignee:'Camilo',  due:'',           priority:'medium', status:'pendiente',   objId:'o_nido'},
+    {id:'tk32', name:'VERSION EDUCACION AQUILES — Jelou',               desc:'',                                      assignee:'Camilo',  due:'',           priority:'medium', status:'pendiente',   objId:'o_nido'},
+    {id:'tk33', name:'Claude — programar horas de curso',               desc:'',                                      assignee:'Camilo',  due:'',           priority:'medium', status:'pendiente',   objId:'o_nido'},
+    // ── EDUCACIÓN LATAM ──
+    {id:'tk34', name:'Escribirle a Philo Legal y armar compañía en USA', desc:'',                                     assignee:'Camilo',  due:'',           priority:'high',   status:'en-progreso', objId:'o_edu'},
+    {id:'tk35', name:'Cambiar plan de negocios para enseñanza en IA',   desc:'',                                      assignee:'Camilo',  due:'',           priority:'high',   status:'pendiente',   objId:'o_edu'},
+    // ── PERSONAL ──
+    {id:'tk36', name:'Estudiar presentación AMR — FLORES',              desc:'',                                      assignee:'Camilo',  due:'',           priority:'medium', status:'pendiente',   objId:'o_per'},
+    {id:'tk37', name:'Pedir reunión a distribuidor FLORES',             desc:'',                                      assignee:'Camilo',  due:'2026-09-04', priority:'high',   status:'pendiente',   objId:'o_per'},
+    {id:'tk38', name:'Fotos PILAR — revisar archivo',                   desc:'',                                      assignee:'Camilo',  due:'',           priority:'low',    status:'en-progreso', objId:'o_per'},
+    {id:'tk39', name:'Montar proyecto videos para Marcela',             desc:'',                                      assignee:'Camilo',  due:'',           priority:'medium', status:'en-progreso', objId:'o_per'},
+    {id:'tk40', name:'UK Sales — Estudio mercado aerosoles (Álvaro)',   desc:'Construir con base en la industria marina', assignee:'Camilo', due:'',        priority:'medium', status:'en-progreso', objId:'o_per'},
+  ]
+};
+
 // ==================== STORAGE ====================
 function save() {
   try { localStorage.setItem('bilib2026_data', JSON.stringify({ objectives:state.objectives, tasks:state.tasks, team:state.team })); } catch(e){}
@@ -462,7 +550,15 @@ function save() {
 function loadLocal() {
   try {
     const d = JSON.parse(localStorage.getItem('bilib2026_data')||'null');
-    if (d) { state.objectives=d.objectives||[]; state.tasks=d.tasks||[]; state.team=d.team||[]; }
+    if (d && (d.objectives||[]).length > 0) {
+      state.objectives=d.objectives||[]; state.tasks=d.tasks||[]; state.team=d.team||[];
+    } else {
+      // Primera vez — cargar datos iniciales
+      state.objectives = SEED.objectives;
+      state.tasks = SEED.tasks;
+      state.team = SEED.team;
+      save();
+    }
     SHEET_URL = localStorage.getItem('bilib2026_url')||'';
     if (SHEET_URL) document.getElementById('sheets-url').value = SHEET_URL;
   } catch(e){}
@@ -635,85 +731,4 @@ function renderObjCard(o){
   const krList=o.krs.map(kr=>{const kp=pct(kr);return`<div class="kr-item"><span class="kr-icon">◈</span><div class="kr-content"><div class="kr-name">${kr.name}</div><div class="kr-detail">${fmtNum(kr.current)} / ${fmtNum(kr.target)} ${kr.unit}</div></div><div class="kr-right"><span class="status-badge ${kr.status}"><span class="status-dot"></span>${statusLabel(kr.status)}</span><div class="kr-progress-bar"><div class="kr-progress-fill" style="width:${kp}%;background:${o.color};"></div></div><span class="kr-pct" style="color:${o.color};">${kp}%</span><button class="kr-edit-btn" onclick="openEditKR('${o.id}','${kr.id}')">✏</button></div></div>`;}).join('');
   const objTasks=state.tasks.filter(t=>t.objId===o.id);
   const taskRows=objTasks.map(t=>`<tr onclick="openEditTask('${t.id}')" style="cursor:pointer;"><td><span style="font-weight:500;">${t.name}</span></td><td style="color:var(--text2);">${t.assignee||'—'}</td><td><span class="priority-badge ${t.priority}">${{high:'Alta',medium:'Media',low:'Baja'}[t.priority]||t.priority}</span></td><td><span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;background:${taskStatusColor(t.status)}18;color:${taskStatusColor(t.status)};"><span style="width:4px;height:4px;border-radius:50%;background:currentColor;display:inline-block;"></span>${taskStatusLabel(t.status)}</span></td><td style="color:var(--text2);">${t.due||'—'}</td></tr>`).join('');
-  return`<div class="obj-card ${o.open?'open':''}" id="obj-${o.id}"><div class="obj-header" onclick="toggleObj('${o.id}')"><div class="obj-color-dot" style="background:${o.color};"></div><div class="obj-title-wrap"><div class="obj-title">${o.name}</div><div class="obj-meta">${o.quarter} · ${o.owner} · ${o.krs.length} KRs · ${objTasks.length} tareas</div></div><div class="obj-progress-wrap"><div class="progress-bar"><div class="progress-fill" style="width:${p}%;background:${o.color};"></div></div><span class="progress-pct" style="color:${o.color};">${p}%</span></div><button onclick="event.stopPropagation();openEditObjective('${o.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px 8px;border-radius:6px;font-size:13px;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text3)'">✏</button><span class="obj-chevron">▼</span></div><div class="obj-body">${o.desc?`<p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem;">${o.desc}</p>`:''}<div class="section-title">Key Results</div><div class="kr-list" style="margin-top:10px;">${krList}</div><button class="add-btn" style="margin-bottom:1.25rem;" onclick="openAddKR('${o.id}')">＋ Key Result</button>${objTasks.length?`<div class="tasks-section"><div class="section-title">Tareas vinculadas</div><table style="margin-top:10px;"><thead><tr><th>Tarea</th><th>Responsable</th><th>Prioridad</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>${taskRows}</tbody></table></div>`:''}<button class="add-btn" onclick="openAddTaskForObj('${o.id}')">＋ Agregar Tarea</button></div></div>`;
-}
-function toggleObj(id){const obj=state.objectives.find(o=>o.id===id);if(obj){obj.open=!obj.open;save();renderOKRs();}}
-
-// ==================== TASKS ====================
-function filterTasks(type,val){state._taskFilters[type]=val;renderTasks();}
-function renderTasks(){
-  let tasks=[...state.tasks];const f=state._taskFilters;
-  if(f.status) tasks=tasks.filter(t=>t.status===f.status);
-  if(f.priority) tasks=tasks.filter(t=>t.priority===f.priority);
-  if(f.search) tasks=tasks.filter(t=>t.name.toLowerCase().includes(f.search.toLowerCase()));
-  const getObjName=id=>(state.objectives.find(o=>o.id===id)||{}).name||'—';
-  document.getElementById('tasks-tbody').innerHTML=tasks.length?tasks.map(t=>`<tr onclick="openEditTask('${t.id}')" style="cursor:pointer;"><td><span style="font-weight:500;">${t.name}</span></td><td style="font-size:12px;color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${getObjName(t.objId)}</td><td style="color:var(--text2);">${t.assignee||'—'}</td><td><span class="priority-badge ${t.priority}">${{high:'Alta',medium:'Media',low:'Baja'}[t.priority]||t.priority}</span></td><td><span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;background:${taskStatusColor(t.status)}18;color:${taskStatusColor(t.status)};"><span style="width:4px;height:4px;border-radius:50%;background:currentColor;display:inline-block;"></span>${taskStatusLabel(t.status)}</span></td><td style="color:var(--text2);">${t.due||'—'}</td><td><button onclick="event.stopPropagation();openEditTask('${t.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;">✏</button></td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:2rem;">No se encontraron tareas</td></tr>';
-}
-
-// ==================== TEAM ====================
-function renderTeam(){
-  const getTC=name=>state.tasks.filter(t=>t.assignee&&t.assignee.toLowerCase()===name.toLowerCase()).length;
-  const getDC=name=>state.tasks.filter(t=>t.assignee&&t.assignee.toLowerCase()===name.toLowerCase()&&t.status==='completada').length;
-  const getOC=name=>state.objectives.filter(o=>o.owner&&o.owner.toLowerCase()===name.toLowerCase()).length;
-  document.getElementById('team-grid').innerHTML=state.team.map(m=>{const tc=getTC(m.name),dc=getDC(m.name),oc=getOC(m.name),perf=tc?Math.round((dc/tc)*100):0;return`<div class="member-card"><div class="member-avatar" style="background:${m.color}22;color:${m.color};">${initials(m.name)}</div><div style="font-family:var(--font-d);font-size:15px;font-weight:600;">${m.name}</div><div style="font-size:12px;color:var(--text2);margin-top:2px;margin-bottom:1rem;">${m.role}${m.email?` · ${m.email}`:''}</div><div class="member-stats"><div class="member-stat"><div class="member-stat-val" style="color:${m.color};">${perf}%</div><div class="member-stat-lbl">Rendimiento</div></div><div class="member-stat"><div class="member-stat-val">${dc}/${tc}</div><div class="member-stat-lbl">Tareas</div></div><div class="member-stat"><div class="member-stat-val">${oc}</div><div class="member-stat-lbl">Objetivos</div></div><div class="member-stat"><div class="member-stat-val" style="color:var(--accent);">●</div><div class="member-stat-lbl">Activo</div></div></div></div>`;}).join('')||'<p style="color:var(--text3);grid-column:1/-1;">No hay miembros aún.</p>';
-}
-
-// ==================== TIMELINE ====================
-function renderTimeline(){
-  const months=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  const qMonths={Q1:[0,2],Q2:[3,5],Q3:[6,8],Q4:[9,11],Anual:[0,11]};
-  const today=new Date();const todayCol=today.getMonth();const todayPct=(today.getDate()/30);
-  let html=`<div class="timeline-header"><div class="tl-label-col">Objetivo</div><div class="tl-months">${months.map(m=>`<div class="tl-month">${m}</div>`).join('')}</div></div>`;
-  state.objectives.forEach(o=>{
-    const q=qMonths[o.quarter]||[0,11];const startPct=(q[0]/12)*100;const widthPct=((q[1]-q[0]+1)/12)*100;const p=objProgress(o);
-    const todayPos=((todayCol+todayPct)/12)*100;
-    const colBgs=months.map((_,i)=>`<div class="tl-col-bg" ${i===todayCol?'style="background:rgba(0,229,160,0.04);"':''}></div>`).join('');
-    html+=`<div class="tl-row"><div class="tl-row-label"><div style="display:flex;align-items:center;gap:6px;"><div style="width:6px;height:6px;border-radius:50%;background:${o.color};flex-shrink:0;"></div><div style="font-size:13px;font-weight:500;">${o.name.length>28?o.name.slice(0,28)+'…':o.name}</div></div><div style="font-size:11px;color:var(--text3);">${o.quarter} · ${p}% completado</div></div><div class="tl-row-bars">${colBgs}<div class="tl-today" style="left:${todayPos}%;"></div><div class="tl-bar" style="left:calc(${startPct}% + 2px);width:calc(${widthPct}% - 4px);background:${o.color}22;border:1px solid ${o.color}55;color:${o.color};">${o.quarter}</div><div class="tl-bar" style="left:calc(${startPct}% + 2px);width:calc(${widthPct*p/100}% - 4px);background:${o.color}55;border-radius:4px;pointer-events:none;"></div></div></div>`;
-  });
-  document.getElementById('timeline-container').innerHTML=html||'<p style="padding:2rem;color:var(--text3);">No hay objetivos.</p>';
-}
-
-// ==================== MODALS ====================
-function closeModal(id){document.getElementById(id).classList.remove('open');}
-function openModal(id){document.getElementById(id).classList.add('open');}
-
-function openAddObjective(){state._editObjId=null;document.getElementById('obj-modal-title').textContent='Nuevo Objetivo';document.getElementById('obj-name').value='';document.getElementById('obj-desc').value='';document.getElementById('obj-quarter').value='Q1';document.getElementById('obj-color').value='#00e5a0';document.getElementById('obj-owner').value='';document.getElementById('obj-delete-btn').style.display='none';openModal('modal-objective');}
-function openEditObjective(id){const o=state.objectives.find(x=>x.id===id);if(!o)return;state._editObjId=id;document.getElementById('obj-modal-title').textContent='Editar Objetivo';document.getElementById('obj-name').value=o.name;document.getElementById('obj-desc').value=o.desc||'';document.getElementById('obj-quarter').value=o.quarter;document.getElementById('obj-color').value=o.color;document.getElementById('obj-owner').value=o.owner||'';document.getElementById('obj-delete-btn').style.display='inline-flex';openModal('modal-objective');}
-async function saveObjective(){
-  const name=document.getElementById('obj-name').value.trim();if(!name){alert('Por favor ingresa un nombre.');return;}
-  const objData={tipo:'objetivo',name,desc:document.getElementById('obj-desc').value,quarter:document.getElementById('obj-quarter').value,color:document.getElementById('obj-color').value,owner:document.getElementById('obj-owner').value};
-  if(state._editObjId){const o=state.objectives.find(x=>x.id===state._editObjId);Object.assign(o,objData);objData.id=state._editObjId;}
-  else{const newId=uid();objData.id=newId;state.objectives.push({...objData,open:true,krs:[]});}
-  save();closeModal('modal-objective');renderOKRs();renderDashboard();
-  upsertToSheet(objData);
-}
-async function deleteObjective(){if(!confirm('¿Eliminar este objetivo?'))return;const id=state._editObjId;state.objectives=state.objectives.filter(o=>o.id!==id);save();closeModal('modal-objective');renderOKRs();renderDashboard();deleteFromSheet(id);}
-
-function openAddKR(objId){state._editKrId=null;state._editKrObjId=objId;document.getElementById('kr-modal-title').textContent='Nuevo Key Result';['kr-name','kr-unit'].forEach(id=>document.getElementById(id).value='');document.getElementById('kr-start').value=0;document.getElementById('kr-target').value=100;document.getElementById('kr-current').value=0;document.getElementById('kr-status').value='on-track';document.getElementById('kr-delete-btn').style.display='none';openModal('modal-kr');}
-function openEditKR(objId,krId){const obj=state.objectives.find(o=>o.id===objId);const kr=obj&&obj.krs.find(k=>k.id===krId);if(!kr)return;state._editKrId=krId;state._editKrObjId=objId;document.getElementById('kr-modal-title').textContent='Editar Key Result';document.getElementById('kr-name').value=kr.name;document.getElementById('kr-start').value=kr.start;document.getElementById('kr-target').value=kr.target;document.getElementById('kr-current').value=kr.current;document.getElementById('kr-unit').value=kr.unit;document.getElementById('kr-status').value=kr.status;document.getElementById('kr-delete-btn').style.display='inline-flex';openModal('modal-kr');}
-async function saveKR(){
-  const name=document.getElementById('kr-name').value.trim();if(!name){alert('Por favor ingresa la descripción.');return;}
-  const obj=state.objectives.find(o=>o.id===state._editKrObjId);
-  const data={name,start:+document.getElementById('kr-start').value,target:+document.getElementById('kr-target').value,current:+document.getElementById('kr-current').value,unit:document.getElementById('kr-unit').value,status:document.getElementById('kr-status').value,kr_objId:state._editKrObjId,tipo:'kr'};
-  if(state._editKrId){const kr=obj.krs.find(k=>k.id===state._editKrId);Object.assign(kr,data);data.id=state._editKrId;}
-  else{const newId=uid();data.id=newId;obj.krs.push({...data});}
-  save();closeModal('modal-kr');renderOKRs();renderDashboard();
-  upsertToSheet(data);
-}
-async function deleteKR(){if(!confirm('¿Eliminar este key result?'))return;const id=state._editKrId;const obj=state.objectives.find(o=>o.id===state._editKrObjId);obj.krs=obj.krs.filter(k=>k.id!==id);save();closeModal('modal-kr');renderOKRs();renderDashboard();deleteFromSheet(id);}
-
-function populateObjSelect(selectedId){const sel=document.getElementById('task-obj');sel.innerHTML='<option value="">Sin objetivo asignado</option>'+state.objectives.map(o=>`<option value="${o.id}" ${o.id===selectedId?'selected':''}>${o.name}</option>`).join('');}
-function openAddTask(){state._editTaskId=null;document.getElementById('task-modal-title').textContent='Nueva Tarea';['task-name','task-desc','task-assignee','task-due'].forEach(id=>document.getElementById(id).value='');document.getElementById('task-priority').value='medium';document.getElementById('task-status').value='pendiente';document.getElementById('task-delete-btn').style.display='none';populateObjSelect('');openModal('modal-task');}
-function openAddTaskForObj(objId){openAddTask();populateObjSelect(objId);}
-function openEditTask(id){const t=state.tasks.find(x=>x.id===id);if(!t)return;state._editTaskId=id;document.getElementById('task-modal-title').textContent='Editar Tarea';document.getElementById('task-name').value=t.name;document.getElementById('task-desc').value=t.desc||'';document.getElementById('task-assignee').value=t.assignee||'';document.getElementById('task-due').value=t.due||'';document.getElementById('task-priority').value=t.priority;document.getElementById('task-status').value=t.status;document.getElementById('task-delete-btn').style.display='inline-flex';populateObjSelect(t.objId);openModal('modal-task');}
-async function saveTask(){
-  const name=document.getElementById('task-name').value.trim();if(!name){alert('Por favor ingresa el nombre.');return;}
-  const data={tipo:'tarea',name,desc:document.getElementById('task-desc').value,assignee:document.getElementById('task-assignee').value,due:document.getElementById('task-due').value,priority:document.getElementById('task-priority').value,status:document.getElementById('task-status').value,objId:document.getElementById('task-obj').value};
-  if(state._editTaskId){const t=state.tasks.find(x=>x.id===state._editTaskId);Object.assign(t,data);data.id=state._editTaskId;}
-  else{const newId=uid();data.id=newId;state.tasks.push({...data});}
-  save();closeModal('modal-task');renderTasks();renderOKRs();renderDashboard();
-  upsertToSheet(data);
-}
-async function deleteTask(){if(!confirm('¿Eliminar esta tarea?'))return;const id=state._editTaskId;state.tasks=state.tasks.filter(t=>t.id!==id);save();closeModal('modal-task');renderTasks();renderOKRs();renderDashboard();deleteFromSheet(id);}
-
-function openAddMember(){document.getElementById('member-name').value='';document.getElementById('member-role')
+  return`<div class="obj-card ${o.open?'open':''}" id="obj-${o.id}"><div class="obj-header" onclick="toggleObj('${o.id}')"><div class="obj-color-dot" style="background:${o.color};"></div><div class="obj-title-wrap"><div class="obj-title">${o.name}</div><div class="obj-meta">${o.quarter} · ${o.owner} · ${o.krs.length} KRs · ${objTasks.length} tareas</div></div><div class="obj-progress-wrap"><div class="progress-bar"><div class="progress-fill" style="width:${p}%;background:${o.color};"></div></div><span class="progress-pct" style="color:${o.color};">${p}%</span></div><button onclick="event.stopPropagation();openEditObjective('${o.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px 8px;border-radius:6px;font-size:13px;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text3)'">✏</button><span class="obj-chevron">▼</span></div><div class="obj-body">${o.desc?`<p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem;">${o.desc}</p>`:''}<div class="section-title">Key Results</div><div class="kr-list" style="margin-top:10px;">${krList}</div><butt
