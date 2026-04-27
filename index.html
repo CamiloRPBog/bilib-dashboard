@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BILIB 2026 — OKR Dashboard</title>
+<script>
+(function(){
+  const HASH = '9b2d4e6f1a8c3b5d7e9f2a4c6b8d0e1f3a5c7b9d2e4f6a8c0b2d4e6f8a0c2d4';
+  function h(s){let r=0;for(let i=0;i<s.length;i++){r=((r<<5)-r)+s.charCodeAt(i);r|=0;}return Math.abs(r).toString(16).padStart(8,'0').repeat(8).slice(0,64);}
+  function check(){
+    const stored = sessionStorage.getItem('bilib_auth');
+    if(stored === 'ok') return;
+    let pin = '';
+    while(true){
+      pin = window.prompt('🔒 BILIB Dashboard\nIngresa el PIN de acceso:');
+      if(pin === null){ document.body.innerHTML='<div style="background:#0a0c10;color:#f0f0ee;height:100vh;display:flex;align-items:center;justify-content:center;font-family:sans-serif;font-size:16px;">Acceso denegado.</div>'; return; }
+      if(h(pin) === h('Najuhero*1234')){ sessionStorage.setItem('bilib_auth','ok'); break; }
+      alert('PIN incorrecto. Intenta de nuevo.');
+    }
+  }
+  check();
+})();
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0c10;--bg2:#111318;--bg3:#191d24;
+    --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+    --text:#f0f0ee;--text2:#8a8f99;--text3:#545861;
+    --accent:#00e5a0;--accent2:#00b87d;
+    --blue:#3b82f6;--amber:#f59e0b;--red:#ef4444;--purple:#a78bfa;
+    --font-d:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;
+    --r:10px;--r2:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-b);font-size:14px;min-height:100vh;}
+  .app{display:flex;flex-direction:column;min-height:100vh;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:60px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:100;}
+  .logo{font-family:var(--font-d);font-weight:800;font-size:18px;letter-spacing:-0.5px;}
+  .logo span{color:var(--accent);}
+  .nav{display:flex;gap:4px;}
+  .nav-btn{font-family:var(--font-b);font-size:13px;padding:6px 14px;border-radius:6px;border:none;cursor:pointer;background:transparent;color:var(--text2);transition:all 0.15s;}
+  .nav-btn:hover{color:var(--text);background:var(--bg3);}
+  .nav-btn.active{color:var(--accent);background:rgba(0,229,160,0.08);}
+  .topbar-right{display:flex;gap:8px;align-items:center;}
+  .badge-year{font-family:var(--font-d);font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;background:rgba(0,229,160,0.1);color:var(--accent);border:1px solid rgba(0,229,160,0.2);}
+  .main{flex:1;padding:2rem;max-width:1400px;margin:0 auto;width:100%;}
+  .view{display:none;}.view.active{display:block;}
+  .page-header{margin-bottom:2rem;}
+  .page-header h2{font-family:var(--font-d);font-size:28px;font-weight:700;letter-spacing:-0.5px;}
+  .page-header p{color:var(--text2);margin-top:4px;font-size:14px;}
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:2rem;}
+  .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.25rem 1.5rem;}
+  .stat-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;}
+  .stat-value{font-family:var(--font-d);font-size:32px;font-weight:700;}
+  .stat-sub{font-size:12px;color:var(--text2);margin-top:4px;}
+  .stat-card.g .stat-value{color:var(--accent);}
+  .stat-card.b .stat-value{color:var(--blue);}
+  .stat-card.a .stat-value{color:var(--amber);}
+  .stat-card.p .stat-value{color:var(--purple);}
+  .objectives-list{display:flex;flex-direction:column;gap:16px;}
+  .obj-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;transition:border-color 0.15s;}
+  .obj-card:hover{border-color:var(--border2);}
+  .obj-header{display:flex;align-items:center;gap:12px;padding:1.25rem 1.5rem;cursor:pointer;user-select:none;}
+  .obj-color-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .obj-title-wrap{flex:1;}
+  .obj-title{font-family:var(--font-d);font-size:16px;font-weight:600;}
+  .obj-meta{font-size:12px;color:var(--text2);margin-top:2px;}
+  .obj-progress-wrap{display:flex;align-items:center;gap:10px;min-width:180px;}
+  .progress-bar{flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+  .progress-fill{height:100%;border-radius:3px;transition:width 0.4s;}
+  .progress-pct{font-family:var(--font-d);font-size:14px;font-weight:700;min-width:36px;text-align:right;}
+  .obj-chevron{color:var(--text3);font-size:12px;transition:transform 0.2s;}
+  .obj-card.open .obj-chevron{transform:rotate(180deg);}
+  .obj-body{display:none;border-top:1px solid var(--border);padding:1.5rem;}
+  .obj-card.open .obj-body{display:block;}
+  .kr-list{display:flex;flex-direction:column;gap:10px;margin-bottom:1rem;}
+  .kr-item{background:var(--bg3);border-radius:var(--r);padding:1rem 1.25rem;display:flex;align-items:center;gap:12px;}
+  .kr-icon{font-size:16px;flex-shrink:0;}
+  .kr-content{flex:1;}
+  .kr-name{font-size:13px;font-weight:500;margin-bottom:4px;}
+  .kr-detail{font-size:12px;color:var(--text2);}
+  .kr-right{display:flex;align-items:center;gap:10px;min-width:200px;}
+  .kr-progress-bar{flex:1;height:4px;background:var(--bg2);border-radius:2px;overflow:hidden;}
+  .kr-progress-fill{height:100%;border-radius:2px;}
+  .kr-pct{font-size:12px;font-weight:600;min-width:32px;text-align:right;}
+  .kr-edit-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:4px;border-radius:4px;transition:color 0.15s;}
+  .kr-edit-btn:hover{color:var(--text);}
+  .status-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:3px 8px;border-radius:20px;}
+  .status-badge.on-track{background:rgba(0,229,160,0.1);color:var(--accent);}
+  .status-badge.at-risk{background:rgba(245,158,11,0.1);color:var(--amber);}
+  .status-badge.behind{background:rgba(239,68,68,0.1);color:var(--red);}
+  .status-badge.done{background:rgba(59,130,246,0.1);color:var(--blue);}
+  .status-dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+  .tasks-section{margin-top:1.5rem;}
+  .section-title{font-family:var(--font-d);font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);margin-bottom:12px;}
+  table{width:100%;border-collapse:collapse;}
+  th{text-align:left;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;padding:0 12px 8px;font-weight:500;}
+  td{padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border);}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:rgba(255,255,255,0.02);}
+  .priority-badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;}
+  .priority-badge.high{background:rgba(239,68,68,0.12);color:var(--red);}
+  .priority-badge.medium{background:rgba(245,158,11,0.12);color:var(--amber);}
+  .priority-badge.low{background:rgba(59,130,246,0.12);color:var(--blue);}
+  .team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  .member-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.5rem;}
+  .member-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-d);font-weight:700;font-size:16px;margin-bottom:1rem;}
+  .member-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .member-stat{background:var(--bg3);border-radius:8px;padding:10px;}
+  .member-stat-val{font-family:var(--font-d);font-size:20px;font-weight:700;}
+  .member-stat-lbl{font-size:11px;color:var(--text3);margin-top:2px;}
+  .timeline-container{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow-x:auto;}
+  .timeline-header{display:flex;border-bottom:1px solid var(--border);}
+  .tl-label-col{width:240px;flex-shrink:0;padding:12px 16px;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;}
+  .tl-months{flex:1;display:grid;grid-template-columns:repeat(12,1fr);}
+  .tl-month{padding:12px 8px;font-size:11px;color:var(--text3);text-align:center;border-left:1px solid var(--border);}
+  .tl-row{display:flex;align-items:center;border-bottom:1px solid var(--border);}
+  .tl-row:last-child{border-bottom:none;}
+  .tl-row-label{width:240px;flex-shrink:0;padding:14px 16px;}
+  .tl-row-bars{flex:1;display:grid;grid-template-columns:repeat(12,1fr);position:relative;height:48px;}
+  .tl-col-bg{border-left:1px solid var(--border);height:100%;}
+  .tl-bar{position:absolute;height:20px;top:50%;transform:translateY(-50%);border-radius:4px;display:flex;align-items:center;padding:0 8px;font-size:11px;font-weight:500;white-space:nowrap;overflow:hidden;}
+  .tl-today{position:absolute;top:0;bottom:0;width:2px;background:var(--accent);opacity:0.5;z-index:2;}
+  .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;}
+  .modal-backdrop.open{display:flex;}
+  .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);padding:2rem;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;}
+  .modal h3{font-family:var(--font-d);font-size:20px;font-weight:700;margin-bottom:1.5rem;}
+  .form-group{margin-bottom:1rem;}
+  .form-label{font-size:12px;color:var(--text2);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:0.4px;}
+  .form-input,.form-select,.form-textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font-b);font-size:14px;outline:none;transition:border-color 0.15s;}
+  .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
+  .form-select{cursor:pointer;}
+  .form-textarea{resize:vertical;min-height:80px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .modal-actions{display:flex;gap:10px;margin-top:1.5rem;justify-content:flex-end;}
+  .btn{font-family:var(--font-b);font-size:13px;font-weight:500;padding:9px 20px;border-radius:8px;border:none;cursor:pointer;transition:all 0.15s;}
+  .btn-primary{background:var(--accent);color:#000;}
+  .btn-primary:hover{background:#00ffb3;}
+  .btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border2);}
+  .btn-ghost:hover{color:var(--text);}
+  .btn-danger{background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.2);}
+  .btn-danger:hover{background:rgba(239,68,68,0.25);}
+  .add-btn{display:flex;align-items:center;gap:8px;font-family:var(--font-b);font-size:13px;font-weight:500;padding:9px 18px;border-radius:8px;border:1px dashed var(--border2);background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;margin-top:12px;}
+  .add-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,229,160,0.04);}
+  .quarter-tabs{display:flex;gap:4px;background:var(--bg3);border-radius:8px;padding:3px;width:fit-content;margin-bottom:1.5rem;}
+  .q-tab{font-size:12px;font-weight:500;padding:5px 14px;border-radius:6px;border:none;cursor:pointer;background:transparent;color:var(--text2);transition:all 0.15s;}
+  .q-tab.active{background:var(--bg2);color:var(--text);border:1px solid var(--border2);}
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .view.active{animation:fadeIn 0.2s ease;}
+
+  /* SYNC STATUS BAR */
+  .sync-bar{display:flex;align-items:center;gap:8px;padding:6px 16px;border-radius:8px;font-size:12px;background:var(--bg3);border:1px solid var(--border);}
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);}
+  .sync-dot.syncing{background:var(--amber);animation:pulse 1s ease-in-out infinite;}
+  .sync-dot.ok{background:var(--accent);}
+  .sync-dot.error{background:var(--red);}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+  /* CONFIG PANEL */
+  .config-panel{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);padding:1.5rem;margin-bottom:1.5rem;}
+  .config-panel h4{font-family:var(--font-d);font-size:15px;font-weight:600;margin-bottom:1rem;}
+  .config-steps{display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--text2);line-height:1.6;}
+  .config-steps code{background:var(--bg3);padding:2px 6px;border-radius:4px;font-family:monospace;color:var(--accent);font-size:12px;}
+  .url-input-row{display:flex;gap:8px;margin-top:1rem;}
+  .url-input-row input{flex:1;}
+  @media(max-width:768px){.stats-row{grid-template-columns:repeat(2,1fr);}.team-grid{grid-template-columns:1fr 1fr;}.topbar{padding:0 1rem;}.main{padding:1rem;}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="logo">BILIB<span>2026</span></div>
+    <nav class="nav">
+      <button class="nav-btn active" onclick="showView('dashboard')">Dashboard</button>
+      <button class="nav-btn" onclick="showView('okrs')">OKRs</button>
+      <button class="nav-btn" onclick="showView('tasks')">Tareas</button>
+      <button class="nav-btn" onclick="showView('team')">Equipo</button>
+      <button class="nav-btn" onclick="showView('timeline')">Timeline</button>
+      <button class="nav-btn" onclick="showView('config')">⚙ Sheets</button>
+    </nav>
+    <div class="topbar-right">
+      <div class="sync-bar">
+        <div class="sync-dot" id="sync-dot"></div>
+        <span id="sync-label" style="color:var(--text2);">Sin conectar</span>
+      </div>
+      <span class="badge-year">USA · 2026</span>
+      <button class="btn btn-primary" onclick="openAddObjective()">+ Objetivo</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="page-header">
+        <h2>Dashboard General</h2>
+        <p>Visión ejecutiva del progreso OKR · <span id="dash-date"></span></p>
+      </div>
+      <div class="stats-row" id="stats-row"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:2rem;">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.5rem;">
+          <div class="section-title" style="margin-bottom:1rem;">Progreso por objetivo</div>
+          <div id="dash-obj-list" style="display:flex;flex-direction:column;gap:14px;"></div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;">
+          <div class="section-title">Avance global</div>
+          <div style="position:relative;width:140px;height:140px;">
+            <svg width="140" height="140" viewBox="0 0 140 140">
+              <circle cx="70" cy="70" r="58" fill="none" stroke="var(--bg3)" stroke-width="10"/>
+              <circle id="global-ring" cx="70" cy="70" r="58" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="364.4" stroke-dashoffset="364.4" style="transform:rotate(-90deg);transform-origin:70px 70px;transition:stroke-dashoffset 0.6s ease;"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+              <span id="global-pct" style="font-family:var(--font-d);font-size:28px;font-weight:700;">0%</span>
+              <span style="font-size:9px;color:var(--text3);text-transform:uppercase;">completado</span>
+            </div>
+          </div>
+          <div id="global-summary" style="text-align:center;font-size:13px;color:var(--text2);"></div>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.5rem;">
+        <div class="section-title" style="margin-bottom:1rem;">Tareas recientes</div>
+        <div id="dash-tasks"></div>
+      </div>
+    </div>
+
+    <!-- OKRs -->
+    <div class="view" id="view-okrs">
+      <div class="page-header">
+        <h2>Objetivos y Resultados Clave</h2>
+        <p>Gestiona tus OKRs · edita, actualiza y mide el rendimiento</p>
+      </div>
+      <div class="quarter-tabs">
+        <button class="q-tab active" onclick="filterQ('all',this)">Todos</button>
+        <button class="q-tab" onclick="filterQ('Q1',this)">Q1</button>
+        <button class="q-tab" onclick="filterQ('Q2',this)">Q2</button>
+        <button class="q-tab" onclick="filterQ('Q3',this)">Q3</button>
+        <button class="q-tab" onclick="filterQ('Q4',this)">Q4</button>
+      </div>
+      <div class="objectives-list" id="objectives-list"></div>
+      <button class="add-btn" onclick="openAddObjective()">＋ Agregar Objetivo</button>
+    </div>
+
+    <!-- TASKS -->
+    <div class="view" id="view-tasks">
+      <div class="page-header"><h2>Tareas</h2><p>Todas las tareas del plan USA BILIB 2026</p></div>
+      <div style="display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;">
+        <select class="form-select" style="width:auto;min-width:140px;" onchange="filterTasks('status',this.value)">
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="en-progreso">En Progreso</option>
+          <option value="completada">Completada</option>
+          <option value="bloqueada">Bloqueada</option>
+        </select>
+        <select class="form-select" style="width:auto;min-width:140px;" onchange="filterTasks('priority',this.value)">
+          <option value="">Todas las prioridades</option>
+          <option value="high">Alta</option>
+          <option value="medium">Media</option>
+          <option value="low">Baja</option>
+        </select>
+        <input class="form-input" style="width:220px;" placeholder="Buscar tarea..." oninput="filterTasks('search',this.value)"/>
+        <button class="btn btn-primary" onclick="openAddTask()" style="margin-left:auto;">+ Nueva Tarea</button>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;">
+        <table><thead><tr>
+          <th>Tarea</th><th>Objetivo</th><th>Responsable</th>
+          <th>Prioridad</th><th>Estado</th><th>Fecha</th><th></th>
+        </tr></thead>
+        <tbody id="tasks-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- TEAM -->
+    <div class="view" id="view-team">
+      <div class="page-header"><h2>Equipo</h2><p>Miembros del equipo USA BILIB 2026</p></div>
+      <div class="team-grid" id="team-grid"></div>
+      <button class="add-btn" onclick="openAddMember()">＋ Agregar Miembro</button>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="view" id="view-timeline">
+      <div class="page-header"><h2>Timeline 2026</h2><p>Objetivos por trimestre</p></div>
+      <div class="timeline-container" id="timeline-container"></div>
+    </div>
+
+    <!-- CONFIG / SHEETS -->
+    <div class="view" id="view-config">
+      <div class="page-header">
+        <h2>Conexión con Google Sheets</h2>
+        <p>Configura la sincronización bidireccional con tu hoja de cálculo</p>
+      </div>
+
+      <div class="config-panel">
+        <h4>Paso 1 — Instalar el script en Google Sheets</h4>
+        <div class="config-steps">
+          <div>1. Abre tu Google Sheet → Menú <code>Extensiones</code> → <code>Apps Script</code></div>
+          <div>2. Borra el contenido y pega el archivo <code>bilib2026_apps_script.js</code> que descargaste</div>
+          <div>3. Guarda (<code>Ctrl+S</code>) → Renombra el proyecto como <code>BILIB2026</code></div>
+          <div>4. Clic en <code>Implementar</code> → <code>Nueva implementación</code></div>
+          <div>5. Tipo: <code>Aplicación web</code> · Ejecutar como: <code>Yo</code> · Acceso: <code>Cualquier persona</code></div>
+          <div>6. Clic <code>Implementar</code> → Autoriza los permisos → Copia la URL generada</div>
+        </div>
+      </div>
+
+      <div class="config-panel">
+        <h4>Paso 2 — Pega la URL del Web App aquí</h4>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:1rem;">La URL tiene este formato: <code>https://script.google.com/macros/s/AKfyc.../exec</code></div>
+        <div class="url-input-row">
+          <input class="form-input" id="sheets-url" type="url" placeholder="https://script.google.com/macros/s/.../exec" value="">
+          <button class="btn btn-primary" onclick="saveSheetURL()">Conectar</button>
+          <button class="btn btn-ghost" onclick="testConnection()">Probar</button>
+        </div>
+        <div id="connection-status" style="margin-top:10px;font-size:13px;"></div>
+      </div>
+
+      <div class="config-panel">
+        <h4>Paso 3 — Estructura de columnas requerida en el Sheet</h4>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">La fila 1 debe tener exactamente estos encabezados (o puedes ejecutar <code>replaceAll</code> desde el botón de abajo para que se creen automáticamente):</p>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr>
+              <th>A: ID</th><th>B: Tipo</th><th>C: Nombre</th><th>D: Descripcion</th>
+              <th>E: Trimestre</th><th>F: Color</th><th>G: Owner</th><th>H: KR_ObjID</th>
+              <th>I–M: KR datos</th><th>N–R: Tarea datos</th><th>S–U: Miembro datos</th>
+            </tr></thead>
+            <tbody><tr>
+              <td style="color:var(--text2);">único</td>
+              <td style="color:var(--text2);">objetivo / kr / tarea / miembro</td>
+              <td style="color:var(--text2);">texto</td>
+              <td style="color:var(--text2);">texto</td>
+              <td style="color:var(--text2);">Q1-Q4</td>
+              <td style="color:var(--text2);">#hex</td>
+              <td style="color:var(--text2);">nombre</td>
+              <td style="color:var(--text2);">ID del obj padre</td>
+              <td style="color:var(--text2);">start, target, current, unit, status</td>
+              <td style="color:var(--text2);">asignado, fecha, prioridad, estado, objId</td>
+              <td style="color:var(--text2);">rol, email, color</td>
+            </tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="config-panel">
+        <h4>Sincronización manual</h4>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
+          <button class="btn btn-primary" onclick="syncFromSheets()">⬇ Importar desde Sheets</button>
+          <button class="btn btn-ghost" onclick="pushToSheets()">⬆ Exportar todo al Sheet</button>
+          <button class="btn btn-ghost" onclick="startAutoSync()">↺ Auto-sync cada 30 seg</button>
+          <button class="btn btn-danger" onclick="stopAutoSync()">✕ Detener auto-sync</button>
+        </div>
+        <div style="margin-top:12px;font-size:12px;color:var(--text3);">
+          El auto-sync lee el Sheet cada 30 segundos y actualiza el dashboard automáticamente.<br>
+          Cualquier cambio que hagas en el dashboard también se escribe de vuelta al Sheet en tiempo real.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODALS (mismo código que versión anterior) -->
+<div class="modal-backdrop" id="modal-objective">
+  <div class="modal">
+    <h3 id="obj-modal-title">Nuevo Objetivo</h3>
+    <div class="form-group"><label class="form-label">Nombre del objetivo</label><input class="form-input" id="obj-name" placeholder="Ej: Expandir presencia en USA..."/></div>
+    <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-textarea" id="obj-desc" placeholder="¿Qué queremos lograr?"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Trimestre</label>
+        <select class="form-select" id="obj-quarter"><option value="Q1">Q1</option><option value="Q2">Q2</option><option value="Q3">Q3</option><option value="Q4">Q4</option><option value="Anual">Anual</option></select></div>
+      <div class="form-group"><label class="form-label">Color</label>
+        <select class="form-select" id="obj-color"><option value="#00e5a0">Verde</option><option value="#3b82f6">Azul</option><option value="#f59e0b">Ámbar</option><option value="#a78bfa">Púrpura</option><option value="#ef4444">Rojo</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Responsable</label><input class="form-input" id="obj-owner" placeholder="Nombre"/></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-objective')">Cancelar</button>
+      <button class="btn btn-danger" id="obj-delete-btn" style="display:none;" onclick="deleteObjective()">Eliminar</button>
+      <button class="btn btn-primary" onclick="saveObjective()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-kr">
+  <div class="modal">
+    <h3 id="kr-modal-title">Nuevo Key Result</h3>
+    <div class="form-group"><label class="form-label">Descripción del Key Result</label><input class="form-input" id="kr-name" placeholder="Ej: Alcanzar 50 nuevos clientes..."/></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Valor inicial</label><input class="form-input" type="number" id="kr-start" value="0"/></div>
+      <div class="form-group"><label class="form-label">Meta</label><input class="form-input" type="number" id="kr-target" value="100"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Valor actual</label><input class="form-input" type="number" id="kr-current" value="0"/></div>
+      <div class="form-group"><label class="form-label">Unidad</label><input class="form-input" id="kr-unit" placeholder="%, clientes, USD..."/></div>
+    </div>
+    <div class="form-group"><label class="form-label">Estado</label>
+      <select class="form-select" id="kr-status"><option value="on-track">En camino</option><option value="at-risk">En riesgo</option><option value="behind">Atrasado</option><option value="done">Completado</option></select></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-kr')">Cancelar</button>
+      <button class="btn btn-danger" id="kr-delete-btn" style="display:none;" onclick="deleteKR()">Eliminar</button>
+      <button class="btn btn-primary" onclick="saveKR()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-task">
+  <div class="modal">
+    <h3 id="task-modal-title">Nueva Tarea</h3>
+    <div class="form-group"><label class="form-label">Nombre de la tarea</label><input class="form-input" id="task-name" placeholder="¿Qué hay que hacer?"/></div>
+    <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-textarea" id="task-desc"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Responsable</label><input class="form-input" id="task-assignee"/></div>
+      <div class="form-group"><label class="form-label">Fecha límite</label><input class="form-input" type="date" id="task-due"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Prioridad</label>
+        <select class="form-select" id="task-priority"><option value="high">Alta</option><option value="medium">Media</option><option value="low">Baja</option></select></div>
+      <div class="form-group"><label class="form-label">Estado</label>
+        <select class="form-select" id="task-status"><option value="pendiente">Pendiente</option><option value="en-progreso">En Progreso</option><option value="completada">Completada</option><option value="bloqueada">Bloqueada</option></select></div>
+    </div>
+    <div class="form-group"><label class="form-label">Objetivo relacionado</label>
+      <select class="form-select" id="task-obj"><option value="">Sin objetivo asignado</option></select></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-task')">Cancelar</button>
+      <button class="btn btn-danger" id="task-delete-btn" style="display:none;" onclick="deleteTask()">Eliminar</button>
+      <button class="btn btn-primary" onclick="saveTask()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-member">
+  <div class="modal">
+    <h3>Miembro del Equipo</h3>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" id="member-name"/></div>
+      <div class="form-group"><label class="form-label">Rol</label><input class="form-input" id="member-role"/></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="member-email" type="email"/></div>
+      <div class="form-group"><label class="form-label">Color avatar</label>
+        <select class="form-select" id="member-color"><option value="#00e5a0">Verde</option><option value="#3b82f6">Azul</option><option value="#f59e0b">Ámbar</option><option value="#a78bfa">Púrpura</option><option value="#ef4444">Rojo</option></select></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-member')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveMember()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== STATE ====================
+let state = { objectives:[], tasks:[], team:[], _editObjId:null, _editKrId:null, _editKrObjId:null, _editTaskId:null, _currentQ:'all', _taskFilters:{status:'',priority:'',search:''} };
+let SHEET_URL = '';
+let autoSyncTimer = null;
+
+// ==================== STORAGE ====================
+function save() {
+  try { localStorage.setItem('bilib2026_data', JSON.stringify({ objectives:state.objectives, tasks:state.tasks, team:state.team })); } catch(e){}
+}
+function loadLocal() {
+  try {
+    const d = JSON.parse(localStorage.getItem('bilib2026_data')||'null');
+    if (d) { state.objectives=d.objectives||[]; state.tasks=d.tasks||[]; state.team=d.team||[]; }
+    SHEET_URL = localStorage.getItem('bilib2026_url')||'';
+    if (SHEET_URL) document.getElementById('sheets-url').value = SHEET_URL;
+  } catch(e){}
+}
+function saveSheetURL() {
+  SHEET_URL = document.getElementById('sheets-url').value.trim();
+  localStorage.setItem('bilib2026_url', SHEET_URL);
+  setSyncStatus('ok', 'URL guardada');
+  document.getElementById('connection-status').innerHTML = '<span style="color:var(--accent);">✓ URL guardada. Haz clic en "Importar desde Sheets" para cargar los datos.</span>';
+}
+
+// ==================== SYNC STATUS ====================
+function setSyncStatus(state, label) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  dot.className = 'sync-dot ' + state;
+  lbl.textContent = label;
+}
+
+// ==================== GOOGLE SHEETS API ====================
+async function syncFromSheets() {
+  if (!SHEET_URL) { alert('Primero configura la URL del Web App en la pestaña ⚙ Sheets'); return; }
+  setSyncStatus('syncing', 'Sincronizando...');
+  try {
+    const res = await fetch(SHEET_URL + '?action=getData', { method:'GET' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    state.objectives = data.objectives || [];
+    state.tasks = data.tasks || [];
+    state.team = data.team || [];
+    save();
+    setSyncStatus('ok', 'Sincronizado · ' + new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}));
+    renderCurrentView();
+  } catch(err) {
+    setSyncStatus('error', 'Error de conexión');
+    console.error('Sync error:', err);
+  }
+}
+
+async function pushToSheets() {
+  if (!SHEET_URL) { alert('Primero configura la URL del Web App en la pestaña ⚙ Sheets'); return; }
+  setSyncStatus('syncing', 'Exportando...');
+  try {
+    const res = await fetch(SHEET_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'replaceAll', data:{ objectives:state.objectives, tasks:state.tasks, team:state.team }})
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    setSyncStatus('ok', 'Exportado · ' + new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}));
+  } catch(err) {
+    setSyncStatus('error', 'Error al exportar');
+    console.error(err);
+  }
+}
+
+async function upsertToSheet(rowData) {
+  if (!SHEET_URL) return;
+  try {
+    await fetch(SHEET_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'upsertRow', data: rowData })
+    });
+  } catch(e) { console.warn('upsert failed', e); }
+}
+
+async function deleteFromSheet(id) {
+  if (!SHEET_URL) return;
+  try {
+    await fetch(SHEET_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ action:'deleteRow', data:{ id } })
+    });
+  } catch(e) { console.warn('delete failed', e); }
+}
+
+async function testConnection() {
+  const url = document.getElementById('sheets-url').value.trim();
+  if (!url) { document.getElementById('connection-status').innerHTML = '<span style="color:var(--red);">Ingresa la URL primero</span>'; return; }
+  document.getElementById('connection-status').innerHTML = '<span style="color:var(--amber);">Probando conexión...</span>';
+  try {
+    const res = await fetch(url + '?action=ping');
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('connection-status').innerHTML = '<span style="color:var(--accent);">✓ Conexión exitosa · ' + data.timestamp + '</span>';
+    } else {
+      throw new Error(JSON.stringify(data));
+    }
+  } catch(e) {
+    document.getElementById('connection-status').innerHTML = '<span style="color:var(--red);">✕ Error: ' + e.message + '</span>';
+  }
+}
+
+function startAutoSync() {
+  if (autoSyncTimer) clearInterval(autoSyncTimer);
+  autoSyncTimer = setInterval(syncFromSheets, 30000);
+  syncFromSheets();
+  setSyncStatus('ok', 'Auto-sync activo');
+}
+
+function stopAutoSync() {
+  if (autoSyncTimer) { clearInterval(autoSyncTimer); autoSyncTimer = null; }
+  setSyncStatus('', 'Auto-sync detenido');
+}
+
+// ==================== UTILS ====================
+function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2); }
+function pct(kr) { return Math.round(Math.min(100,Math.max(0,((kr.current-kr.start)/(kr.target-kr.start))*100))); }
+function objProgress(obj) { if(!obj.krs.length) return 0; return Math.round(obj.krs.reduce((s,kr)=>s+pct(kr),0)/obj.krs.length); }
+function fmtNum(n) { return n>=1000?n.toLocaleString():n; }
+function statusLabel(s) { return {'on-track':'En camino','at-risk':'En riesgo','behind':'Atrasado','done':'Completado'}[s]||s; }
+function taskStatusLabel(s) { return {pendiente:'Pendiente','en-progreso':'En Progreso',completada:'Completada',bloqueada:'Bloqueada'}[s]||s; }
+function taskStatusColor(s) { return {pendiente:'#8a8f99','en-progreso':'#3b82f6',completada:'#00e5a0',bloqueada:'#ef4444'}[s]||'#8a8f99'; }
+function initials(name) { return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
+
+// ==================== VIEWS ====================
+let _currentView = 'dashboard';
+function showView(name) {
+  _currentView = name;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  event.target.classList.add('active');
+  renderView(name);
+}
+function renderCurrentView() { renderView(_currentView); }
+function renderView(name) {
+  if(name==='dashboard') renderDashboard();
+  if(name==='okrs') renderOKRs();
+  if(name==='tasks') renderTasks();
+  if(name==='team') renderTeam();
+  if(name==='timeline') renderTimeline();
+}
+
+// ==================== DASHBOARD ====================
+function renderDashboard() {
+  document.getElementById('dash-date').textContent = new Date().toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const totalKRs = state.objectives.reduce((s,o)=>s+o.krs.length,0);
+  const doneKRs = state.objectives.reduce((s,o)=>s+o.krs.filter(k=>k.status==='done').length,0);
+  const doneTasks = state.tasks.filter(t=>t.status==='completada').length;
+  const globalP = state.objectives.length ? Math.round(state.objectives.reduce((s,o)=>s+objProgress(o),0)/state.objectives.length) : 0;
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card g"><div class="stat-label">Avance Global</div><div class="stat-value">${globalP}%</div><div class="stat-sub">${state.objectives.length} objetivos activos</div></div>
+    <div class="stat-card b"><div class="stat-label">Key Results</div><div class="stat-value">${doneKRs}/${totalKRs}</div><div class="stat-sub">completados</div></div>
+    <div class="stat-card a"><div class="stat-label">Tareas</div><div class="stat-value">${doneTasks}/${state.tasks.length}</div><div class="stat-sub">completadas</div></div>
+    <div class="stat-card p"><div class="stat-label">Equipo</div><div class="stat-value">${state.team.length}</div><div class="stat-sub">miembros activos</div></div>`;
+  const circ=364.4;
+  document.getElementById('global-ring').style.strokeDashoffset=circ-(circ*globalP/100);
+  document.getElementById('global-pct').textContent=globalP+'%';
+  document.getElementById('global-summary').textContent=`${state.objectives.length} objetivos · ${totalKRs} key results · ${state.team.length} personas`;
+  document.getElementById('dash-obj-list').innerHTML=state.objectives.map(o=>{const p=objProgress(o);return`<div><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><div style="width:8px;height:8px;border-radius:50%;background:${o.color};flex-shrink:0;"></div><span style="font-size:13px;font-weight:500;flex:1;">${o.name}</span><span style="font-family:var(--font-d);font-size:13px;font-weight:700;color:${o.color};">${p}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${p}%;background:${o.color};"></div></div></div>`;}).join('')||'<p style="color:var(--text3);font-size:13px;">No hay objetivos aún.</p>';
+  const recent=[...state.tasks].sort((a,b)=>(b.due||'').localeCompare(a.due||'')).slice(0,5);
+  document.getElementById('dash-tasks').innerHTML=recent.length?`<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="text-align:left;font-size:11px;color:var(--text3);text-transform:uppercase;padding:0 12px 8px;font-weight:500;">Tarea</th><th style="text-align:left;font-size:11px;color:var(--text3);text-transform:uppercase;padding:0 12px 8px;font-weight:500;">Responsable</th><th style="text-align:left;font-size:11px;color:var(--text3);text-transform:uppercase;padding:0 12px 8px;font-weight:500;">Estado</th></tr></thead><tbody>${recent.map(t=>`<tr><td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border);">${t.name}</td><td style="padding:10px 12px;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border);">${t.assignee||'—'}</td><td style="padding:10px 12px;border-bottom:1px solid var(--border);"><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 8px;border-radius:20px;background:${taskStatusColor(t.status)}18;color:${taskStatusColor(t.status)};"><span style="width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block;"></span>${taskStatusLabel(t.status)}</span></td></tr>`).join('')}</tbody></table>`:'<p style="color:var(--text3);font-size:13px;padding:12px;">No hay tareas aún.</p>';
+}
+
+// ==================== OKRs ====================
+function filterQ(q,el){state._currentQ=q;document.querySelectorAll('.q-tab').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderOKRs();}
+function renderOKRs(){
+  const list=document.getElementById('objectives-list');
+  const filtered=state._currentQ==='all'?state.objectives:state.objectives.filter(o=>o.quarter===state._currentQ);
+  if(!filtered.length){list.innerHTML='<div style="text-align:center;padding:3rem;color:var(--text3);"><p>No hay objetivos para este trimestre.</p></div>';return;}
+  list.innerHTML=filtered.map(o=>renderObjCard(o)).join('');
+}
+function renderObjCard(o){
+  const p=objProgress(o);
+  const krList=o.krs.map(kr=>{const kp=pct(kr);return`<div class="kr-item"><span class="kr-icon">◈</span><div class="kr-content"><div class="kr-name">${kr.name}</div><div class="kr-detail">${fmtNum(kr.current)} / ${fmtNum(kr.target)} ${kr.unit}</div></div><div class="kr-right"><span class="status-badge ${kr.status}"><span class="status-dot"></span>${statusLabel(kr.status)}</span><div class="kr-progress-bar"><div class="kr-progress-fill" style="width:${kp}%;background:${o.color};"></div></div><span class="kr-pct" style="color:${o.color};">${kp}%</span><button class="kr-edit-btn" onclick="openEditKR('${o.id}','${kr.id}')">✏</button></div></div>`;}).join('');
+  const objTasks=state.tasks.filter(t=>t.objId===o.id);
+  const taskRows=objTasks.map(t=>`<tr onclick="openEditTask('${t.id}')" style="cursor:pointer;"><td><span style="font-weight:500;">${t.name}</span></td><td style="color:var(--text2);">${t.assignee||'—'}</td><td><span class="priority-badge ${t.priority}">${{high:'Alta',medium:'Media',low:'Baja'}[t.priority]||t.priority}</span></td><td><span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;background:${taskStatusColor(t.status)}18;color:${taskStatusColor(t.status)};"><span style="width:4px;height:4px;border-radius:50%;background:currentColor;display:inline-block;"></span>${taskStatusLabel(t.status)}</span></td><td style="color:var(--text2);">${t.due||'—'}</td></tr>`).join('');
+  return`<div class="obj-card ${o.open?'open':''}" id="obj-${o.id}"><div class="obj-header" onclick="toggleObj('${o.id}')"><div class="obj-color-dot" style="background:${o.color};"></div><div class="obj-title-wrap"><div class="obj-title">${o.name}</div><div class="obj-meta">${o.quarter} · ${o.owner} · ${o.krs.length} KRs · ${objTasks.length} tareas</div></div><div class="obj-progress-wrap"><div class="progress-bar"><div class="progress-fill" style="width:${p}%;background:${o.color};"></div></div><span class="progress-pct" style="color:${o.color};">${p}%</span></div><button onclick="event.stopPropagation();openEditObjective('${o.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px 8px;border-radius:6px;font-size:13px;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text3)'">✏</button><span class="obj-chevron">▼</span></div><div class="obj-body">${o.desc?`<p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem;">${o.desc}</p>`:''}<div class="section-title">Key Results</div><div class="kr-list" style="margin-top:10px;">${krList}</div><button class="add-btn" style="margin-bottom:1.25rem;" onclick="openAddKR('${o.id}')">＋ Key Result</button>${objTasks.length?`<div class="tasks-section"><div class="section-title">Tareas vinculadas</div><table style="margin-top:10px;"><thead><tr><th>Tarea</th><th>Responsable</th><th>Prioridad</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>${taskRows}</tbody></table></div>`:''}<button class="add-btn" onclick="openAddTaskForObj('${o.id}')">＋ Agregar Tarea</button></div></div>`;
+}
+function toggleObj(id){const obj=state.objectives.find(o=>o.id===id);if(obj){obj.open=!obj.open;save();renderOKRs();}}
+
+// ==================== TASKS ====================
+function filterTasks(type,val){state._taskFilters[type]=val;renderTasks();}
+function renderTasks(){
+  let tasks=[...state.tasks];const f=state._taskFilters;
+  if(f.status) tasks=tasks.filter(t=>t.status===f.status);
+  if(f.priority) tasks=tasks.filter(t=>t.priority===f.priority);
+  if(f.search) tasks=tasks.filter(t=>t.name.toLowerCase().includes(f.search.toLowerCase()));
+  const getObjName=id=>(state.objectives.find(o=>o.id===id)||{}).name||'—';
+  document.getElementById('tasks-tbody').innerHTML=tasks.length?tasks.map(t=>`<tr onclick="openEditTask('${t.id}')" style="cursor:pointer;"><td><span style="font-weight:500;">${t.name}</span></td><td style="font-size:12px;color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${getObjName(t.objId)}</td><td style="color:var(--text2);">${t.assignee||'—'}</td><td><span class="priority-badge ${t.priority}">${{high:'Alta',medium:'Media',low:'Baja'}[t.priority]||t.priority}</span></td><td><span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;background:${taskStatusColor(t.status)}18;color:${taskStatusColor(t.status)};"><span style="width:4px;height:4px;border-radius:50%;background:currentColor;display:inline-block;"></span>${taskStatusLabel(t.status)}</span></td><td style="color:var(--text2);">${t.due||'—'}</td><td><button onclick="event.stopPropagation();openEditTask('${t.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;">✏</button></td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:2rem;">No se encontraron tareas</td></tr>';
+}
+
+// ==================== TEAM ====================
+function renderTeam(){
+  const getTC=name=>state.tasks.filter(t=>t.assignee&&t.assignee.toLowerCase()===name.toLowerCase()).length;
+  const getDC=name=>state.tasks.filter(t=>t.assignee&&t.assignee.toLowerCase()===name.toLowerCase()&&t.status==='completada').length;
+  const getOC=name=>state.objectives.filter(o=>o.owner&&o.owner.toLowerCase()===name.toLowerCase()).length;
+  document.getElementById('team-grid').innerHTML=state.team.map(m=>{const tc=getTC(m.name),dc=getDC(m.name),oc=getOC(m.name),perf=tc?Math.round((dc/tc)*100):0;return`<div class="member-card"><div class="member-avatar" style="background:${m.color}22;color:${m.color};">${initials(m.name)}</div><div style="font-family:var(--font-d);font-size:15px;font-weight:600;">${m.name}</div><div style="font-size:12px;color:var(--text2);margin-top:2px;margin-bottom:1rem;">${m.role}${m.email?` · ${m.email}`:''}</div><div class="member-stats"><div class="member-stat"><div class="member-stat-val" style="color:${m.color};">${perf}%</div><div class="member-stat-lbl">Rendimiento</div></div><div class="member-stat"><div class="member-stat-val">${dc}/${tc}</div><div class="member-stat-lbl">Tareas</div></div><div class="member-stat"><div class="member-stat-val">${oc}</div><div class="member-stat-lbl">Objetivos</div></div><div class="member-stat"><div class="member-stat-val" style="color:var(--accent);">●</div><div class="member-stat-lbl">Activo</div></div></div></div>`;}).join('')||'<p style="color:var(--text3);grid-column:1/-1;">No hay miembros aún.</p>';
+}
+
+// ==================== TIMELINE ====================
+function renderTimeline(){
+  const months=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const qMonths={Q1:[0,2],Q2:[3,5],Q3:[6,8],Q4:[9,11],Anual:[0,11]};
+  const today=new Date();const todayCol=today.getMonth();const todayPct=(today.getDate()/30);
+  let html=`<div class="timeline-header"><div class="tl-label-col">Objetivo</div><div class="tl-months">${months.map(m=>`<div class="tl-month">${m}</div>`).join('')}</div></div>`;
+  state.objectives.forEach(o=>{
+    const q=qMonths[o.quarter]||[0,11];const startPct=(q[0]/12)*100;const widthPct=((q[1]-q[0]+1)/12)*100;const p=objProgress(o);
+    const todayPos=((todayCol+todayPct)/12)*100;
+    const colBgs=months.map((_,i)=>`<div class="tl-col-bg" ${i===todayCol?'style="background:rgba(0,229,160,0.04);"':''}></div>`).join('');
+    html+=`<div class="tl-row"><div class="tl-row-label"><div style="display:flex;align-items:center;gap:6px;"><div style="width:6px;height:6px;border-radius:50%;background:${o.color};flex-shrink:0;"></div><div style="font-size:13px;font-weight:500;">${o.name.length>28?o.name.slice(0,28)+'…':o.name}</div></div><div style="font-size:11px;color:var(--text3);">${o.quarter} · ${p}% completado</div></div><div class="tl-row-bars">${colBgs}<div class="tl-today" style="left:${todayPos}%;"></div><div class="tl-bar" style="left:calc(${startPct}% + 2px);width:calc(${widthPct}% - 4px);background:${o.color}22;border:1px solid ${o.color}55;color:${o.color};">${o.quarter}</div><div class="tl-bar" style="left:calc(${startPct}% + 2px);width:calc(${widthPct*p/100}% - 4px);background:${o.color}55;border-radius:4px;pointer-events:none;"></div></div></div>`;
+  });
+  document.getElementById('timeline-container').innerHTML=html||'<p style="padding:2rem;color:var(--text3);">No hay objetivos.</p>';
+}
+
+// ==================== MODALS ====================
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openModal(id){document.getElementById(id).classList.add('open');}
+
+function openAddObjective(){state._editObjId=null;document.getElementById('obj-modal-title').textContent='Nuevo Objetivo';document.getElementById('obj-name').value='';document.getElementById('obj-desc').value='';document.getElementById('obj-quarter').value='Q1';document.getElementById('obj-color').value='#00e5a0';document.getElementById('obj-owner').value='';document.getElementById('obj-delete-btn').style.display='none';openModal('modal-objective');}
+function openEditObjective(id){const o=state.objectives.find(x=>x.id===id);if(!o)return;state._editObjId=id;document.getElementById('obj-modal-title').textContent='Editar Objetivo';document.getElementById('obj-name').value=o.name;document.getElementById('obj-desc').value=o.desc||'';document.getElementById('obj-quarter').value=o.quarter;document.getElementById('obj-color').value=o.color;document.getElementById('obj-owner').value=o.owner||'';document.getElementById('obj-delete-btn').style.display='inline-flex';openModal('modal-objective');}
+async function saveObjective(){
+  const name=document.getElementById('obj-name').value.trim();if(!name){alert('Por favor ingresa un nombre.');return;}
+  const objData={tipo:'objetivo',name,desc:document.getElementById('obj-desc').value,quarter:document.getElementById('obj-quarter').value,color:document.getElementById('obj-color').value,owner:document.getElementById('obj-owner').value};
+  if(state._editObjId){const o=state.objectives.find(x=>x.id===state._editObjId);Object.assign(o,objData);objData.id=state._editObjId;}
+  else{const newId=uid();objData.id=newId;state.objectives.push({...objData,open:true,krs:[]});}
+  save();closeModal('modal-objective');renderOKRs();renderDashboard();
+  upsertToSheet(objData);
+}
+async function deleteObjective(){if(!confirm('¿Eliminar este objetivo?'))return;const id=state._editObjId;state.objectives=state.objectives.filter(o=>o.id!==id);save();closeModal('modal-objective');renderOKRs();renderDashboard();deleteFromSheet(id);}
+
+function openAddKR(objId){state._editKrId=null;state._editKrObjId=objId;document.getElementById('kr-modal-title').textContent='Nuevo Key Result';['kr-name','kr-unit'].forEach(id=>document.getElementById(id).value='');document.getElementById('kr-start').value=0;document.getElementById('kr-target').value=100;document.getElementById('kr-current').value=0;document.getElementById('kr-status').value='on-track';document.getElementById('kr-delete-btn').style.display='none';openModal('modal-kr');}
+function openEditKR(objId,krId){const obj=state.objectives.find(o=>o.id===objId);const kr=obj&&obj.krs.find(k=>k.id===krId);if(!kr)return;state._editKrId=krId;state._editKrObjId=objId;document.getElementById('kr-modal-title').textContent='Editar Key Result';document.getElementById('kr-name').value=kr.name;document.getElementById('kr-start').value=kr.start;document.getElementById('kr-target').value=kr.target;document.getElementById('kr-current').value=kr.current;document.getElementById('kr-unit').value=kr.unit;document.getElementById('kr-status').value=kr.status;document.getElementById('kr-delete-btn').style.display='inline-flex';openModal('modal-kr');}
+async function saveKR(){
+  const name=document.getElementById('kr-name').value.trim();if(!name){alert('Por favor ingresa la descripción.');return;}
+  const obj=state.objectives.find(o=>o.id===state._editKrObjId);
+  const data={name,start:+document.getElementById('kr-start').value,target:+document.getElementById('kr-target').value,current:+document.getElementById('kr-current').value,unit:document.getElementById('kr-unit').value,status:document.getElementById('kr-status').value,kr_objId:state._editKrObjId,tipo:'kr'};
+  if(state._editKrId){const kr=obj.krs.find(k=>k.id===state._editKrId);Object.assign(kr,data);data.id=state._editKrId;}
+  else{const newId=uid();data.id=newId;obj.krs.push({...data});}
+  save();closeModal('modal-kr');renderOKRs();renderDashboard();
+  upsertToSheet(data);
+}
+async function deleteKR(){if(!confirm('¿Eliminar este key result?'))return;const id=state._editKrId;const obj=state.objectives.find(o=>o.id===state._editKrObjId);obj.krs=obj.krs.filter(k=>k.id!==id);save();closeModal('modal-kr');renderOKRs();renderDashboard();deleteFromSheet(id);}
+
+function populateObjSelect(selectedId){const sel=document.getElementById('task-obj');sel.innerHTML='<option value="">Sin objetivo asignado</option>'+state.objectives.map(o=>`<option value="${o.id}" ${o.id===selectedId?'selected':''}>${o.name}</option>`).join('');}
+function openAddTask(){state._editTaskId=null;document.getElementById('task-modal-title').textContent='Nueva Tarea';['task-name','task-desc','task-assignee','task-due'].forEach(id=>document.getElementById(id).value='');document.getElementById('task-priority').value='medium';document.getElementById('task-status').value='pendiente';document.getElementById('task-delete-btn').style.display='none';populateObjSelect('');openModal('modal-task');}
+function openAddTaskForObj(objId){openAddTask();populateObjSelect(objId);}
+function openEditTask(id){const t=state.tasks.find(x=>x.id===id);if(!t)return;state._editTaskId=id;document.getElementById('task-modal-title').textContent='Editar Tarea';document.getElementById('task-name').value=t.name;document.getElementById('task-desc').value=t.desc||'';document.getElementById('task-assignee').value=t.assignee||'';document.getElementById('task-due').value=t.due||'';document.getElementById('task-priority').value=t.priority;document.getElementById('task-status').value=t.status;document.getElementById('task-delete-btn').style.display='inline-flex';populateObjSelect(t.objId);openModal('modal-task');}
+async function saveTask(){
+  const name=document.getElementById('task-name').value.trim();if(!name){alert('Por favor ingresa el nombre.');return;}
+  const data={tipo:'tarea',name,desc:document.getElementById('task-desc').value,assignee:document.getElementById('task-assignee').value,due:document.getElementById('task-due').value,priority:document.getElementById('task-priority').value,status:document.getElementById('task-status').value,objId:document.getElementById('task-obj').value};
+  if(state._editTaskId){const t=state.tasks.find(x=>x.id===state._editTaskId);Object.assign(t,data);data.id=state._editTaskId;}
+  else{const newId=uid();data.id=newId;state.tasks.push({...data});}
+  save();closeModal('modal-task');renderTasks();renderOKRs();renderDashboard();
+  upsertToSheet(data);
+}
+async function deleteTask(){if(!confirm('¿Eliminar esta tarea?'))return;const id=state._editTaskId;state.tasks=state.tasks.filter(t=>t.id!==id);save();closeModal('modal-task');renderTasks();renderOKRs();renderDashboard();deleteFromSheet(id);}
+
+function openAddMember(){document.getElementById('member-name').value='';document.getElementById('member-role')
