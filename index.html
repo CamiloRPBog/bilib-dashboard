@@ -731,4 +731,248 @@ function renderObjCard(o){
   const krList=o.krs.map(kr=>{const kp=pct(kr);return`<div class="kr-item"><span class="kr-icon">◈</span><div class="kr-content"><div class="kr-name">${kr.name}</div><div class="kr-detail">${fmtNum(kr.current)} / ${fmtNum(kr.target)} ${kr.unit}</div></div><div class="kr-right"><span class="status-badge ${kr.status}"><span class="status-dot"></span>${statusLabel(kr.status)}</span><div class="kr-progress-bar"><div class="kr-progress-fill" style="width:${kp}%;background:${o.color};"></div></div><span class="kr-pct" style="color:${o.color};">${kp}%</span><button class="kr-edit-btn" onclick="openEditKR('${o.id}','${kr.id}')">✏</button></div></div>`;}).join('');
   const objTasks=state.tasks.filter(t=>t.objId===o.id);
   const taskRows=objTasks.map(t=>`<tr onclick="openEditTask('${t.id}')" style="cursor:pointer;"><td><span style="font-weight:500;">${t.name}</span></td><td style="color:var(--text2);">${t.assignee||'—'}</td><td><span class="priority-badge ${t.priority}">${{high:'Alta',medium:'Media',low:'Baja'}[t.priority]||t.priority}</span></td><td><span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;background:${taskStatusColor(t.status)}18;color:${taskStatusColor(t.status)};"><span style="width:4px;height:4px;border-radius:50%;background:currentColor;display:inline-block;"></span>${taskStatusLabel(t.status)}</span></td><td style="color:var(--text2);">${t.due||'—'}</td></tr>`).join('');
-  return`<div class="obj-card ${o.open?'open':''}" id="obj-${o.id}"><div class="obj-header" onclick="toggleObj('${o.id}')"><div class="obj-color-dot" style="background:${o.color};"></div><div class="obj-title-wrap"><div class="obj-title">${o.name}</div><div class="obj-meta">${o.quarter} · ${o.owner} · ${o.krs.length} KRs · ${objTasks.length} tareas</div></div><div class="obj-progress-wrap"><div class="progress-bar"><div class="progress-fill" style="width:${p}%;background:${o.color};"></div></div><span class="progress-pct" style="color:${o.color};">${p}%</span></div><button onclick="event.stopPropagation();openEditObjective('${o.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px 8px;border-radius:6px;font-size:13px;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text3)'">✏</button><span class="obj-chevron">▼</span></div><div class="obj-body">${o.desc?`<p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem;">${o.desc}</p>`:''}<div class="section-title">Key Results</div><div class="kr-list" style="margin-top:10px;">${krList}</div><butt
+  return`<div class="obj-card ${o.open?'open':''}" id="obj-${o.id}"><div class="obj-header" onclick="toggleObj('${o.id}')"><div class="obj-color-dot" style="background:${o.color};"></div><div class="obj-title-wrap"><div class="obj-title">${o.name}</div><div class="obj-meta">${o.quarter} · ${o.owner} · ${o.krs.length} KRs · ${objTasks.length} tareas</div></div><div class="obj-progress-wrap"><div class="progress-bar"><div class="progress-fill" style="width:${p}%;background:${o.color};"></div></div><span class="progress-pct" style="color:${o.color};">${p}%</span></div><button onclick="event.stopPropagation();openEditObjective('${o.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px 8px;border-radius:6px;font-size:13px;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--text3)'">✏</button><span class="obj-chevron">▼</span></div><div class="obj-body">${o.desc?`<p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem;">${o.desc}</p>`:''}<div class="section-title">Key Results</div><div class="kr-list" style="margin-top:10px;">${krList}</div><button class="add-btn" onclick="openAddKR('${o.id}')" style="margin-top:8px;">＋ Key Result</button>
+  ${taskRows.length?`<div class="section-title" style="margin-top:1.5rem;">Tareas</div><div style="overflow-x:auto;"><table><tbody>${taskRows}</tbody></table></div>`:''}
+  <button class="add-btn" onclick="openAddTask('${o.id}')">＋ Tarea</button>
+</div></div>`;
+}
+
+// ==================== TASKS VIEW ====================
+function filterTasks(key, val) {
+  state._taskFilters[key] = val;
+  renderTasks();
+}
+function renderTasks() {
+  let list = state.tasks;
+  if (state._taskFilters.status)   list = list.filter(t => t.status === state._taskFilters.status);
+  if (state._taskFilters.priority) list = list.filter(t => t.priority === state._taskFilters.priority);
+  if (state._taskFilters.search)   list = list.filter(t => t.name.toLowerCase().includes(state._taskFilters.search.toLowerCase()));
+  const tbody = document.getElementById('tasks-tbody');
+  if (\!list.length) { tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text3);">No hay tareas.</td></tr>`; return; }
+  tbody.innerHTML = list.map(t => {
+    const obj = state.objectives.find(o => o.id === t.objId);
+    return `<tr onclick="openEditTask('${t.id}')" style="cursor:pointer;">
+      <td style="font-weight:500;">${t.name}</td>
+      <td style="color:var(--text2);font-size:12px;">${obj ? obj.name.slice(0,30)+'…' : '—'}</td>
+      <td style="color:var(--text2);">${t.assignee||'—'}</td>
+      <td><span class="priority-badge ${t.priority}">${{high:'Alta',medium:'Media',low:'Baja'}[t.priority]||t.priority}</span></td>
+      <td><span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;background:${taskStatusColor(t.status)}18;color:${taskStatusColor(t.status)};"><span style="width:4px;height:4px;border-radius:50%;background:currentColor;display:inline-block;"></span>${taskStatusLabel(t.status)}</span></td>
+      <td style="color:var(--text2);font-size:12px;">${t.due||'—'}</td>
+      <td><button onclick="event.stopPropagation();openEditTask('${t.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;">✏</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ==================== TEAM VIEW ====================
+function renderTeam() {
+  const grid = document.getElementById('team-grid');
+  if (\!state.team.length) { grid.innerHTML = '<p style="color:var(--text3);">No hay miembros.</p>'; return; }
+  const taskCount = m => state.tasks.filter(t => t.assignee === m.name).length;
+  const doneCount = m => state.tasks.filter(t => t.assignee === m.name && t.status === 'completada').length;
+  grid.innerHTML = state.team.map(m => `
+    <div class="team-card">
+      <div class="member-avatar" style="background:${m.color}20;color:${m.color};border:2px solid ${m.color}40;">${initials(m.name)}</div>
+      <div class="member-name">${m.name}</div>
+      <div class="member-role">${m.role}</div>
+      ${m.email ? `<div style="font-size:11px;color:var(--text3);margin-top:4px;">${m.email}</div>` : ''}
+      <div style="margin-top:12px;font-size:12px;color:var(--text2);">${doneCount(m)}/${taskCount(m)} tareas completadas</div>
+    </div>`).join('');
+}
+
+// ==================== TIMELINE VIEW ====================
+function renderTimeline() {
+  const quarters = ['Q1','Q2','Q3','Q4','Anual'];
+  const container = document.getElementById('timeline-container');
+  container.innerHTML = quarters.map(q => {
+    const objs = state.objectives.filter(o => o.quarter === q);
+    if (\!objs.length) return '';
+    return `<div style="margin-bottom:2rem;">
+      <div style="font-family:var(--font-d);font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">${q}</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        ${objs.map(o => { const p = objProgress(o); return `
+          <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;display:flex;align-items:center;gap:14px;">
+            <div style="width:10px;height:10px;border-radius:50%;background:${o.color};flex-shrink:0;"></div>
+            <div style="flex:1;"><div style="font-weight:500;font-size:14px;">${o.name}</div><div style="font-size:12px;color:var(--text2);margin-top:2px;">${o.owner} · ${o.krs.length} KRs</div></div>
+            <div style="width:160px;"><div class="progress-bar"><div class="progress-fill" style="width:${p}%;background:${o.color};"></div></div></div>
+            <span style="font-family:var(--font-d);font-size:14px;font-weight:700;color:${o.color};min-width:36px;text-align:right;">${p}%</span>
+          </div>`; }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ==================== MODALS ====================
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+
+function openAddObjective() {
+  state._editObjId = null;
+  document.getElementById('obj-modal-title').textContent = 'Nuevo Objetivo';
+  document.getElementById('obj-name').value = '';
+  document.getElementById('obj-desc').value = '';
+  document.getElementById('obj-quarter').value = 'Q1';
+  document.getElementById('obj-color').value = '#00e5a0';
+  document.getElementById('obj-owner').value = '';
+  document.getElementById('obj-delete-btn').style.display = 'none';
+  openModal('modal-objective');
+}
+function openEditObjective(id) {
+  const o = state.objectives.find(x => x.id === id);
+  if (\!o) return;
+  state._editObjId = id;
+  document.getElementById('obj-modal-title').textContent = 'Editar Objetivo';
+  document.getElementById('obj-name').value = o.name;
+  document.getElementById('obj-desc').value = o.desc || '';
+  document.getElementById('obj-quarter').value = o.quarter;
+  document.getElementById('obj-color').value = o.color;
+  document.getElementById('obj-owner').value = o.owner || '';
+  document.getElementById('obj-delete-btn').style.display = '';
+  openModal('modal-objective');
+}
+function saveObjective() {
+  const name = document.getElementById('obj-name').value.trim();
+  if (\!name) { alert('El nombre es requerido.'); return; }
+  if (state._editObjId) {
+    const o = state.objectives.find(x => x.id === state._editObjId);
+    if (o) { o.name = name; o.desc = document.getElementById('obj-desc').value.trim(); o.quarter = document.getElementById('obj-quarter').value; o.color = document.getElementById('obj-color').value; o.owner = document.getElementById('obj-owner').value.trim(); }
+  } else {
+    state.objectives.push({ id: uid(), name, desc: document.getElementById('obj-desc').value.trim(), quarter: document.getElementById('obj-quarter').value, color: document.getElementById('obj-color').value, owner: document.getElementById('obj-owner').value.trim(), open: false, krs: [] });
+  }
+  save(); closeModal('modal-objective'); renderCurrentView();
+}
+function deleteObjective() {
+  if (\!state._editObjId) return;
+  if (\!confirm('¿Eliminar este objetivo y sus KRs?')) return;
+  state.objectives = state.objectives.filter(o => o.id \!== state._editObjId);
+  state.tasks = state.tasks.filter(t => t.objId \!== state._editObjId);
+  save(); closeModal('modal-objective'); renderCurrentView();
+}
+
+function openAddKR(objId) {
+  state._editKrObjId = objId;
+  state._editKrId = null;
+  document.getElementById('kr-modal-title').textContent = 'Nuevo Key Result';
+  document.getElementById('kr-name').value = '';
+  document.getElementById('kr-start').value = 0;
+  document.getElementById('kr-target').value = 100;
+  document.getElementById('kr-current').value = 0;
+  document.getElementById('kr-unit').value = '';
+  document.getElementById('kr-status').value = 'on-track';
+  document.getElementById('kr-delete-btn').style.display = 'none';
+  openModal('modal-kr');
+}
+function openEditKR(objId, krId) {
+  const o = state.objectives.find(x => x.id === objId);
+  const kr = o && o.krs.find(k => k.id === krId);
+  if (\!kr) return;
+  state._editKrObjId = objId; state._editKrId = krId;
+  document.getElementById('kr-modal-title').textContent = 'Editar Key Result';
+  document.getElementById('kr-name').value = kr.name;
+  document.getElementById('kr-start').value = kr.start;
+  document.getElementById('kr-target').value = kr.target;
+  document.getElementById('kr-current').value = kr.current;
+  document.getElementById('kr-unit').value = kr.unit || '';
+  document.getElementById('kr-status').value = kr.status;
+  document.getElementById('kr-delete-btn').style.display = '';
+  openModal('modal-kr');
+}
+function saveKR() {
+  const name = document.getElementById('kr-name').value.trim();
+  if (\!name) { alert('La descripción es requerida.'); return; }
+  const o = state.objectives.find(x => x.id === state._editKrObjId);
+  if (\!o) return;
+  const data = { name, start: +document.getElementById('kr-start').value||0, target: +document.getElementById('kr-target').value||100, current: +document.getElementById('kr-current').value||0, unit: document.getElementById('kr-unit').value.trim(), status: document.getElementById('kr-status').value };
+  if (state._editKrId) { const kr = o.krs.find(k => k.id === state._editKrId); if (kr) Object.assign(kr, data); }
+  else { o.krs.push({ id: uid(), ...data }); }
+  save(); closeModal('modal-kr'); renderCurrentView();
+}
+function deleteKR() {
+  const o = state.objectives.find(x => x.id === state._editKrObjId);
+  if (\!o || \!state._editKrId) return;
+  if (\!confirm('¿Eliminar este Key Result?')) return;
+  o.krs = o.krs.filter(k => k.id \!== state._editKrId);
+  save(); closeModal('modal-kr'); renderCurrentView();
+}
+
+function openAddTask(objId) {
+  state._editTaskId = null;
+  document.getElementById('task-modal-title').textContent = 'Nueva Tarea';
+  document.getElementById('task-name').value = '';
+  document.getElementById('task-desc').value = '';
+  document.getElementById('task-assignee').value = '';
+  document.getElementById('task-due').value = '';
+  document.getElementById('task-priority').value = 'medium';
+  document.getElementById('task-status').value = 'pendiente';
+  const sel = document.getElementById('task-obj');
+  sel.innerHTML = '<option value="">Sin objetivo</option>' + state.objectives.map(o => `<option value="${o.id}"${objId===o.id?' selected':''}>${o.name}</option>`).join('');
+  document.getElementById('task-delete-btn').style.display = 'none';
+  openModal('modal-task');
+}
+function openEditTask(id) {
+  const t = state.tasks.find(x => x.id === id);
+  if (\!t) return;
+  state._editTaskId = id;
+  document.getElementById('task-modal-title').textContent = 'Editar Tarea';
+  document.getElementById('task-name').value = t.name;
+  document.getElementById('task-desc').value = t.desc || '';
+  document.getElementById('task-assignee').value = t.assignee || '';
+  document.getElementById('task-due').value = t.due || '';
+  document.getElementById('task-priority').value = t.priority || 'medium';
+  document.getElementById('task-status').value = t.status || 'pendiente';
+  const sel = document.getElementById('task-obj');
+  sel.innerHTML = '<option value="">Sin objetivo</option>' + state.objectives.map(o => `<option value="${o.id}"${t.objId===o.id?' selected':''}>${o.name}</option>`).join('');
+  document.getElementById('task-delete-btn').style.display = '';
+  openModal('modal-task');
+}
+function saveTask() {
+  const name = document.getElementById('task-name').value.trim();
+  if (\!name) { alert('El nombre es requerido.'); return; }
+  const data = { name, desc: document.getElementById('task-desc').value.trim(), assignee: document.getElementById('task-assignee').value.trim(), due: document.getElementById('task-due').value, priority: document.getElementById('task-priority').value, status: document.getElementById('task-status').value, objId: document.getElementById('task-obj').value };
+  if (state._editTaskId) { const t = state.tasks.find(x => x.id === state._editTaskId); if (t) Object.assign(t, data); }
+  else { state.tasks.push({ id: uid(), ...data }); }
+  save(); closeModal('modal-task'); renderCurrentView();
+  if (SHEET_URL) pushToSheets();
+}
+function deleteTask() {
+  if (\!state._editTaskId) return;
+  if (\!confirm('¿Eliminar esta tarea?')) return;
+  state.tasks = state.tasks.filter(t => t.id \!== state._editTaskId);
+  save(); closeModal('modal-task'); renderCurrentView();
+}
+
+function openAddMember() {
+  document.getElementById('member-name').value = '';
+  document.getElementById('member-role').value = '';
+  document.getElementById('member-email').value = '';
+  document.getElementById('member-color').value = '#00e5a0';
+  openModal('modal-member');
+}
+function saveMember() {
+  const name = document.getElementById('member-name').value.trim();
+  if (\!name) { alert('El nombre es requerido.'); return; }
+  state.team.push({ id: uid(), name, role: document.getElementById('member-role').value.trim(), email: document.getElementById('member-email').value.trim(), color: document.getElementById('member-color').value });
+  save(); closeModal('modal-member'); renderTeam();
+}
+
+function toggleObj(id) {
+  const o = state.objectives.find(x => x.id === id);
+  if (o) { o.open = \!o.open; renderOKRs(); }
+}
+
+// Close modal on backdrop click
+document.querySelectorAll('.modal-backdrop').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+// ==================== INIT ====================
+window.addEventListener('DOMContentLoaded', function() {
+  loadLocal();
+  renderDashboard();
+  renderOKRs();
+  renderTasks();
+  renderTeam();
+  renderTimeline();
+});
+</script>
+</body>
+</html>
