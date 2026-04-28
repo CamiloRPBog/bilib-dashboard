@@ -245,21 +245,21 @@
     <nav class="nav">
       <button class="nav-btn active" onclick="showView('dashboard')">Dashboard</button>
       <button class="nav-btn" onclick="showView('okrs')">OKRs</button>
-      <button class="nav-btn" onclick="showView('tasks')">Tareas</button>
-      <button class="nav-btn" onclick="showView('team')">Equipo</button>
+      <button class="nav-btn" onclick="showView('tasks')">Tasks</button>
+      <button class="nav-btn" onclick="showView('team')">Team</button>
       <button class="nav-btn" onclick="showView('timeline')">Timeline</button>
       <button class="nav-btn" onclick="showView('crm')">CRM</button>
-      <button class="nav-btn" onclick="showView('habits')">Habitos</button>
-      <button class="nav-btn" onclick="showView('weekly')">Semana</button>
+      <button class="nav-btn" onclick="showView('habits')">Habits</button>
+      <button class="nav-btn" onclick="showView('weekly')">Week</button>
       <button class="nav-btn" onclick="showView('config')">⚙ Sheets</button>
     </nav>
     <div class="topbar-right">
       <div class="sync-bar">
         <div class="sync-dot" id="sync-dot"></div>
-        <span id="sync-label" style="color:var(--text2);">Sin conectar</span>
+        <span id="sync-label" style="color:var(--text2);">Not connected</span>
       </div>
       <span class="badge-year">USA · 2026</span>
-      <button class="btn btn-primary" onclick="openAddObjective()">+ Objetivo</button>
+      <button class="btn btn-primary" onclick="openAddObjective()">+ Objective</button>
     </div>
   </div>
 
@@ -268,17 +268,17 @@
     <!-- DASHBOARD -->
     <div class="view active" id="view-dashboard">
       <div class="page-header">
-        <h2>Dashboard General</h2>
-        <p>Visión ejecutiva del progreso OKR · <span id="dash-date"></span></p>
+        <h2>General Dashboard</h2>
+        <p>Executive view of OKR progress · <span id="dash-date"></span></p>
       </div>
       <div class="stats-row" id="stats-row"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:2rem;">
         <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.5rem;">
-          <div class="section-title" style="margin-bottom:1rem;">Progreso por objetivo</div>
+          <div class="section-title" style="margin-bottom:1rem;">Progress by objective</div>
           <div id="dash-obj-list" style="display:flex;flex-direction:column;gap:14px;"></div>
         </div>
         <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;">
-          <div class="section-title">Avance global</div>
+          <div class="section-title">Global progress</div>
           <div style="position:relative;width:140px;height:140px;">
             <svg width="140" height="140" viewBox="0 0 140 140">
               <circle cx="70" cy="70" r="58" fill="none" stroke="var(--bg3)" stroke-width="10"/>
@@ -286,14 +286,14 @@
             </svg>
             <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
               <span id="global-pct" style="font-family:var(--font-d);font-size:28px;font-weight:700;">0%</span>
-              <span style="font-size:9px;color:var(--text3);text-transform:uppercase;">completado</span>
+              <span style="font-size:9px;color:var(--text3);text-transform:uppercase;">completed</span>
             </div>
           </div>
           <div id="global-summary" style="text-align:center;font-size:13px;color:var(--text2);"></div>
         </div>
       </div>
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.5rem;">
-        <div class="section-title" style="margin-bottom:1rem;">Tareas recientes</div>
+        <div class="section-title" style="margin-bottom:1rem;">Recent tasks</div>
         <div id="dash-tasks"></div>
       </div>
     </div>
@@ -301,44 +301,44 @@
     <!-- OKRs -->
     <div class="view" id="view-okrs">
       <div class="page-header">
-        <h2>Objetivos y Resultados Clave</h2>
-        <p>Gestiona tus OKRs · edita, actualiza y mide el rendimiento</p>
+        <h2>Objectives and Key Results</h2>
+        <p>Manage your OKRs · edit, update and measure performance</p>
       </div>
       <div class="quarter-tabs">
-        <button class="q-tab active" onclick="filterQ('all',this)">Todos</button>
+        <button class="q-tab active" onclick="filterQ('all',this)">All</button>
         <button class="q-tab" onclick="filterQ('Q1',this)">Q1</button>
         <button class="q-tab" onclick="filterQ('Q2',this)">Q2</button>
         <button class="q-tab" onclick="filterQ('Q3',this)">Q3</button>
         <button class="q-tab" onclick="filterQ('Q4',this)">Q4</button>
       </div>
       <div class="objectives-list" id="objectives-list"></div>
-      <button class="add-btn" onclick="openAddObjective()">＋ Agregar Objetivo</button>
+      <button class="add-btn" onclick="openAddObjective()">＋ Add Objective</button>
     </div>
 
     <!-- TASKS -->
     <div class="view" id="view-tasks">
-      <div class="page-header"><h2>Tareas</h2><p>Todas las tareas del plan USA BILIB 2026</p></div>
+      <div class="page-header"><h2>Tasks</h2><p>All tasks for the BILIB USA 2026 plan</p></div>
       <div style="display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;">
         <select class="form-select" style="width:auto;min-width:140px;" onchange="filterTasks('status',this.value)">
-          <option value="">Todos los estados</option>
-          <option value="pendiente">Pendiente</option>
-          <option value="en-progreso">En Progreso</option>
-          <option value="completada">Completada</option>
-          <option value="bloqueada">Bloqueada</option>
+          <option value="">All los estados</option>
+          <option value="pending">Pending</option>
+          <option value="in-progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="blocked">Blocked</option>
         </select>
         <select class="form-select" style="width:auto;min-width:140px;" onchange="filterTasks('priority',this.value)">
-          <option value="">Todas las prioridades</option>
-          <option value="high">Alta</option>
-          <option value="medium">Media</option>
-          <option value="low">Baja</option>
+          <option value="">All priorities</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
         </select>
-        <input class="form-input" style="width:220px;" placeholder="Buscar tarea..." oninput="filterTasks('search',this.value)"/>
-        <button class="btn btn-primary" onclick="openAddTask()" style="margin-left:auto;">+ Nueva Tarea</button>
+        <input class="form-input" style="width:220px;" placeholder="Search task..." oninput="filterTasks('search',this.value)"/>
+        <button class="btn btn-primary" onclick="openAddTask()" style="margin-left:auto;">+ New Task</button>
       </div>
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;">
         <table><thead><tr>
-          <th>Tarea</th><th>Objetivo</th><th>Responsable</th>
-          <th>Prioridad</th><th>Estado</th><th>Fecha</th><th></th>
+          <th>Task</th><th>Objective</th><th>Assignee</th>
+          <th>Priority</th><th>Status</th><th>Date</th><th></th>
         </tr></thead>
         <tbody id="tasks-tbody"></tbody></table>
       </div>
@@ -346,24 +346,24 @@
 
     <!-- TEAM -->
     <div class="view" id="view-team">
-      <div class="page-header"><h2>Equipo</h2><p>Miembros del equipo USA BILIB 2026</p></div>
+      <div class="page-header"><h2>Team</h2><p>BILIB USA 2026 team members</p></div>
       <div class="team-grid" id="team-grid"></div>
-      <button class="add-btn" onclick="openAddMember()">＋ Agregar Miembro</button>
+      <button class="add-btn" onclick="openAddMember()">＋ Add Member</button>
     </div>
 
 
     <!-- HABITS -->
     <div class="view" id="view-habits">
       <div class="page-header">
-        <h2>Tracker de Habitos</h2>
-        <p>Control diario · seguimiento mensual · resumen anual</p>
+        <h2>Habit Tracker</h2>
+        <p>Daily tracking · monthly follow-up · annual summary</p>
       </div>
 
       <!-- Month nav -->
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.5rem;flex-wrap:wrap;">
-        <button class="week-nav-btn" onclick="shiftHabitMonth(-1)">&#8592; Mes anterior</button>
+        <button class="week-nav-btn" onclick="shiftHabitMonth(-1)">&#8592; Previous month</button>
         <span style="font-family:var(--font-d);font-size:15px;font-weight:700;" id="habit-month-label"></span>
-        <button class="week-nav-btn" id="habit-next-btn" onclick="shiftHabitMonth(1)">Mes siguiente &#8594;</button>
+        <button class="week-nav-btn" id="habit-next-btn" onclick="shiftHabitMonth(1)">Next month &#8594;</button>
       </div>
 
       <!-- Main tracker grid -->
@@ -381,16 +381,16 @@
             <div id="habit-checkin-rows"></div>
           </div>
           <div class="habit-checkin" style="margin-top:12px;">
-            <div style="font-size:13px;font-weight:600;margin-bottom:1rem;">Rachas actuales</div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:1rem;">Current streaks</div>
             <div id="habit-streaks"></div>
           </div>
           <!-- Monthly summary for current month -->
           <div class="habit-checkin" style="margin-top:12px;">
-            <div style="font-size:13px;font-weight:600;margin-bottom:0.8rem;">Este mes</div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:0.8rem;">This month</div>
             <div id="habit-month-summary"></div>
           </div>
           <div class="habit-checkin" style="margin-top:12px;">
-            <div style="font-size:13px;font-weight:600;margin-bottom:0.8rem;">Referencia</div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:0.8rem;">Legend</div>
             <div class="habit-legend" id="habit-legend"></div>
           </div>
         </div>
@@ -400,7 +400,7 @@
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.5rem;margin-top:24px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.5rem;">
           <div style="font-family:var(--font-d);font-size:14px;font-weight:700;" id="habit-year-title"></div>
-          <div style="font-size:12px;color:var(--text3);">Haz clic en un mes para verlo</div>
+          <div style="font-size:12px;color:var(--text3);">Click a month to view it</div>
         </div>
         <!-- Per-habit annual bars -->
         <div id="habit-annual-bars" style="margin-bottom:1.2rem;"></div>
@@ -413,41 +413,41 @@
     <!-- WEEKLY -->
     <div class="view" id="view-weekly">
       <div class="page-header">
-        <h2>Gestion Semanal</h2>
-        <p>Planea tu semana y mide tu cumplimiento</p>
+        <h2>Weekly Management</h2>
+        <p>Plan your week and measure your achievement</p>
       </div>
 
-      <!-- Sub-tabs: Planeacion / Tablero -->
+      <!-- Sub-tabs: Planning / Tablero -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:12px;">
         <div class="week-tabs">
-          <button class="week-tab active" id="wtab-plan" onclick="switchWeekTab('plan')">Planeacion</button>
-          <button class="week-tab" id="wtab-review" onclick="switchWeekTab('review')">Tablero semanal</button>
+          <button class="week-tab active" id="wtab-plan" onclick="switchWeekTab('plan')">Planning</button>
+          <button class="week-tab" id="wtab-review" onclick="switchWeekTab('review')">Weekly Board</button>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
-          <button class="week-nav-btn" onclick="shiftWeek(-1)">&#8592; Anterior</button>
+          <button class="week-nav-btn" onclick="shiftWeek(-1)">&#8592; Previous</button>
           <span class="week-label" id="week-label"></span>
-          <button class="week-nav-btn" onclick="shiftWeek(1)">Siguiente &#8594;</button>
+          <button class="week-nav-btn" onclick="shiftWeek(1)">Next &#8594;</button>
         </div>
       </div>
 
       <!-- PLANEACION -->
       <div id="weekly-plan-view">
         <div class="week-card" style="margin-bottom:16px;">
-          <div class="week-card-title">Intencion de la semana</div>
-          <textarea class="week-note" id="week-intention" placeholder="¿Cual es el enfoque principal esta semana? ¿Que quieres lograr?" oninput="saveWeekNote()"></textarea>
+          <div class="week-card-title">Weekly intention</div>
+          <textarea class="week-note" id="week-intention" placeholder="What is the main focus this week? What do you want to achieve?" oninput="saveWeekNote()"></textarea>
         </div>
         <div class="week-card">
           <div class="week-card-title" style="display:flex;justify-content:space-between;align-items:center;">
-            <span>Metas semanales</span>
+            <span>Weekly goals</span>
             <span id="goal-count-badge" style="background:var(--bg3);padding:2px 10px;border-radius:20px;font-size:11px;color:var(--text2);"></span>
           </div>
           <div id="week-goals-list"></div>
           <div class="add-goal-row">
-            <input class="form-input" id="new-goal-input" placeholder="Agregar meta para esta semana..." style="flex:1;" onkeydown="if(event.key==='Enter')addWeekGoal()"/>
+            <input class="form-input" id="new-goal-input" placeholder="Add a goal for this week..." style="flex:1;" onkeydown="if(event.key==='Enter')addWeekGoal()"/>
             <select class="form-select" id="new-goal-obj" style="width:180px;">
-              <option value="">Sin objetivo</option>
+              <option value="">No objective</option>
             </select>
-            <button class="btn btn-primary" onclick="addWeekGoal()">+ Agregar</button>
+            <button class="btn btn-primary" onclick="addWeekGoal()">+ Add</button>
           </div>
         </div>
       </div>
@@ -478,12 +478,12 @@
         <div class="week-subgrid">
           <!-- Goals review -->
           <div class="week-card">
-            <div class="week-card-title">Metas de la semana</div>
+            <div class="week-card-title">Weekly goals</div>
             <div id="review-goals-list"></div>
           </div>
           <!-- Habit grid -->
           <div class="week-card">
-            <div class="week-card-title">Habitos esta semana</div>
+            <div class="week-card-title">Habits this week</div>
             <div id="review-habits-grid"></div>
           </div>
         </div>
@@ -491,13 +491,13 @@
         <div class="week-subgrid">
           <!-- Tasks completed -->
           <div class="week-card">
-            <div class="week-card-title">Tareas completadas esta semana</div>
+            <div class="week-card-title">Tasks completed esta semana</div>
             <div id="review-tasks"></div>
           </div>
           <!-- Notes / reflection -->
           <div class="week-card">
-            <div class="week-card-title">Reflexion de cierre</div>
-            <textarea class="week-note" id="week-reflection" placeholder="¿Que salió bien? ¿Que mejorar la proxima semana?" oninput="saveWeekReflection()"></textarea>
+            <div class="week-card-title">Closing reflection</div>
+            <textarea class="week-note" id="week-reflection" placeholder="What went well? What to improve next week?" oninput="saveWeekReflection()"></textarea>
           </div>
         </div>
       </div>
@@ -506,50 +506,50 @@
     <!-- CRM -->
     <div class="view" id="view-crm">
       <div class="page-header">
-        <h2>CRM — Pipeline de Oportunidades</h2>
-        <p>Seguimiento de contactos y ventas activas</p>
+        <h2>CRM — Opportunity Pipeline</h2>
+        <p>Contact tracking and active sales</p>
       </div>
       <div style="display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center;">
         <select class="form-select" style="width:auto;min-width:150px;" onchange="filterCRM('proyecto',this.value)">
-          <option value="">Todos los proyectos</option>
+          <option value="">All los proyectos</option>
           <option value="BILIB">BILIB</option>
           <option value="NIDO">NIDO</option>
           <option value="Educación">Educación</option>
         </select>
-        <input class="form-input" style="width:200px;" placeholder="Buscar contacto..." oninput="filterCRM('search',this.value)"/>
-        <button class="btn btn-primary" onclick="openAddLead()" style="margin-left:auto;">+ Nueva Oportunidad</button>
+        <input class="form-input" style="width:200px;" placeholder="Search contact..." oninput="filterCRM('search',this.value)"/>
+        <button class="btn btn-primary" onclick="openAddLead()" style="margin-left:auto;">+ New Opportunity</button>
       </div>
       <div id="crm-kanban" style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;"></div>
     </div>
 
     <!-- TIMELINE -->
     <div class="view" id="view-timeline">
-      <div class="page-header"><h2>Timeline 2026</h2><p>Objetivos por trimestre</p></div>
+      <div class="page-header"><h2>Timeline 2026</h2><p>Objectives por trimestre</p></div>
       <div class="timeline-container" id="timeline-container"></div>
     </div>
 
     <!-- CONFIG / SHEETS -->
     <div class="view" id="view-config">
       <div class="page-header">
-        <h2>Conexión con Google Sheets</h2>
-        <p>Configura la sincronización bidireccional con tu hoja de cálculo</p>
+        <h2>Google Sheets Connection</h2>
+        <p>Configure two-way sync with your spreadsheet</p>
       </div>
 
       <div class="config-panel">
-        <h4>Paso 1 — Instalar el script en Google Sheets</h4>
+        <h4>Step 1 — Install the script in Google Sheets</h4>
         <div class="config-steps">
-          <div>1. Abre tu Google Sheet → Menú <code>Extensiones</code> → <code>Apps Script</code></div>
-          <div>2. Borra el contenido y pega el archivo <code>bilib2026_apps_script.js</code> que descargaste</div>
-          <div>3. Guarda (<code>Ctrl+S</code>) → Renombra el proyecto como <code>BILIB2026</code></div>
-          <div>4. Clic en <code>Implementar</code> → <code>Nueva implementación</code></div>
-          <div>5. Tipo: <code>Aplicación web</code> · Ejecutar como: <code>Yo</code> · Acceso: <code>Cualquier persona</code></div>
-          <div>6. Clic <code>Implementar</code> → Autoriza los permisos → Copia la URL generada</div>
+          <div>1. Open your Google Sheet → Menu <code>Extensions</code> → <code>Apps Script</code></div>
+          <div>2. Delete the content and paste the file <code>bilib2026_apps_script.js</code> que descargaste</div>
+          <div>3. Save (<code>Ctrl+S</code>) → Rename the project to <code>BILIB2026</code></div>
+          <div>4. Click on <code>Deploy</code> → <code>New deployment</code></div>
+          <div>5. Type: <code>Web app</code> · Run as: <code>Yo</code> · Access: <code>Anyone</code></div>
+          <div>6. Clic <code>Deploy</code> → Authorize permissions → Copy the generated URL</div>
         </div>
       </div>
 
       <div class="config-panel">
-        <h4>Paso 2 — Pega la URL del Web App aquí</h4>
-        <div style="font-size:13px;color:var(--text2);margin-bottom:1rem;">La URL tiene este formato: <code>https://script.google.com/macros/s/AKfyc.../exec</code></div>
+        <h4>Step 2 — Paste the Web App URL here</h4>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:1rem;">The URL looks like this: <code>https://script.google.com/macros/s/AKfyc.../exec</code></div>
         <div class="url-input-row">
           <input class="form-input" id="sheets-url" type="url" placeholder="https://script.google.com/macros/s/.../exec" value="">
           <button class="btn btn-primary" onclick="saveSheetURL()">Conectar</button>
@@ -559,14 +559,14 @@
       </div>
 
       <div class="config-panel">
-        <h4>Paso 3 — Estructura de columnas requerida en el Sheet</h4>
-        <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">La fila 1 debe tener exactamente estos encabezados (o puedes ejecutar <code>replaceAll</code> desde el botón de abajo para que se creen automáticamente):</p>
+        <h4>Step 3 — Required column structure in the Sheet</h4>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:12px;">Row 1 must have exactly these headers (o puedes ejecutar <code>replaceAll</code> desde el botón de abajo para que se creen automáticamente):</p>
         <div style="overflow-x:auto;">
           <table>
             <thead><tr>
-              <th>A: ID</th><th>B: Tipo</th><th>C: Nombre</th><th>D: Descripcion</th>
-              <th>E: Trimestre</th><th>F: Color</th><th>G: Owner</th><th>H: KR_ObjID</th>
-              <th>I–M: KR datos</th><th>N–R: Tarea datos</th><th>S–U: Miembro datos</th>
+              <th>A: ID</th><th>B: Tipo</th><th>C: Name</th><th>D: Descripcion</th>
+              <th>E: Quarter</th><th>F: Color</th><th>G: Owner</th><th>H: KR_ObjID</th>
+              <th>I–M: KR datos</th><th>N–R: Task datos</th><th>S–U: Miembro datos</th>
             </tr></thead>
             <tbody><tr>
               <td style="color:var(--text2);">único</td>
@@ -586,16 +586,16 @@
       </div>
 
       <div class="config-panel">
-        <h4>Sincronización manual</h4>
+        <h4>Manual sync</h4>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;">
-          <button class="btn btn-primary" onclick="syncFromSheets()">⬇ Importar desde Sheets</button>
-          <button class="btn btn-ghost" onclick="pushToSheets()">⬆ Exportar todo al Sheet</button>
-          <button class="btn btn-ghost" onclick="startAutoSync()">↺ Auto-sync cada 30 seg</button>
-          <button class="btn btn-danger" onclick="stopAutoSync()">✕ Detener auto-sync</button>
+          <button class="btn btn-primary" onclick="syncFromSheets()">⬇ Import from Sheets</button>
+          <button class="btn btn-ghost" onclick="pushToSheets()">⬆ Export all to Sheet</button>
+          <button class="btn btn-ghost" onclick="startAutoSync()">↺ Auto-sync every 30 sec</button>
+          <button class="btn btn-danger" onclick="stopAutoSync()">✕ Stop auto-sync</button>
         </div>
         <div style="margin-top:12px;font-size:12px;color:var(--text3);">
-          El auto-sync lee el Sheet cada 30 segundos y actualiza el dashboard automáticamente.<br>
-          Cualquier cambio que hagas en el dashboard también se escribe de vuelta al Sheet en tiempo real.
+          Auto-sync reads the Sheet every 30 seconds and updates the dashboard automatically.<br>
+          Any changes you make in the dashboard are also written back to the Sheet in real time.
         </div>
       </div>
     </div>
@@ -606,77 +606,77 @@
 <!-- MODALS (mismo código que versión anterior) -->
 <div class="modal-backdrop" id="modal-objective">
   <div class="modal">
-    <h3 id="obj-modal-title">Nuevo Objetivo</h3>
-    <div class="form-group"><label class="form-label">Nombre del objetivo</label><input class="form-input" id="obj-name" placeholder="Ej: Expandir presencia en USA..."/></div>
-    <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-textarea" id="obj-desc" placeholder="¿Qué queremos lograr?"></textarea></div>
+    <h3 id="obj-modal-title">Nuevo Objective</h3>
+    <div class="form-group"><label class="form-label">Objective name</label><input class="form-input" id="obj-name" placeholder="E.g.: Expand presence in USA..."/></div>
+    <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="obj-desc" placeholder="What do we want to achieve?"></textarea></div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Trimestre</label>
+      <div class="form-group"><label class="form-label">Quarter</label>
         <select class="form-select" id="obj-quarter"><option value="Q1">Q1</option><option value="Q2">Q2</option><option value="Q3">Q3</option><option value="Q4">Q4</option><option value="Anual">Anual</option></select></div>
       <div class="form-group"><label class="form-label">Color</label>
-        <select class="form-select" id="obj-color"><option value="#00e5a0">Verde</option><option value="#3b82f6">Azul</option><option value="#f59e0b">Ámbar</option><option value="#a78bfa">Púrpura</option><option value="#ef4444">Rojo</option></select></div>
+        <select class="form-select" id="obj-color"><option value="#00e5a0">Green</option><option value="#3b82f6">Blue</option><option value="#f59e0b">Amber</option><option value="#a78bfa">Purple</option><option value="#ef4444">Red</option></select></div>
     </div>
-    <div class="form-group"><label class="form-label">Responsable</label><input class="form-input" id="obj-owner" placeholder="Nombre"/></div>
+    <div class="form-group"><label class="form-label">Assignee</label><input class="form-input" id="obj-owner" placeholder="Name"/></div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('modal-objective')">Cancelar</button>
-      <button class="btn btn-danger" id="obj-delete-btn" style="display:none;" onclick="deleteObjective()">Eliminar</button>
-      <button class="btn btn-primary" onclick="saveObjective()">Guardar</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-objective')">Cancel</button>
+      <button class="btn btn-danger" id="obj-delete-btn" style="display:none;" onclick="deleteObjective()">Delete</button>
+      <button class="btn btn-primary" onclick="saveObjective()">Save</button>
     </div>
   </div>
 </div>
 
 <div class="modal-backdrop" id="modal-kr">
   <div class="modal">
-    <h3 id="kr-modal-title">Nuevo Key Result</h3>
-    <div class="form-group"><label class="form-label">Descripción del Key Result</label><input class="form-input" id="kr-name" placeholder="Ej: Alcanzar 50 nuevos clientes..."/></div>
+    <h3 id="kr-modal-title">New Key Result</h3>
+    <div class="form-group"><label class="form-label">Description del Key Result</label><input class="form-input" id="kr-name" placeholder="E.g.: Reach 50 new clients..."/></div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Valor inicial</label><input class="form-input" type="number" id="kr-start" value="0"/></div>
-      <div class="form-group"><label class="form-label">Meta</label><input class="form-input" type="number" id="kr-target" value="100"/></div>
+      <div class="form-group"><label class="form-label">Start value</label><input class="form-input" type="number" id="kr-start" value="0"/></div>
+      <div class="form-group"><label class="form-label">Target</label><input class="form-input" type="number" id="kr-target" value="100"/></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Valor actual</label><input class="form-input" type="number" id="kr-current" value="0"/></div>
-      <div class="form-group"><label class="form-label">Unidad</label><input class="form-input" id="kr-unit" placeholder="%, clientes, USD..."/></div>
+      <div class="form-group"><label class="form-label">Current value</label><input class="form-input" type="number" id="kr-current" value="0"/></div>
+      <div class="form-group"><label class="form-label">Unit</label><input class="form-input" id="kr-unit" placeholder="%, clients, USD..."/></div>
     </div>
-    <div class="form-group"><label class="form-label">Estado</label>
+    <div class="form-group"><label class="form-label">Status</label>
       <select class="form-select" id="kr-status"><option value="on-track">En camino</option><option value="at-risk">En riesgo</option><option value="behind">Atrasado</option><option value="done">Completado</option></select></div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('modal-kr')">Cancelar</button>
-      <button class="btn btn-danger" id="kr-delete-btn" style="display:none;" onclick="deleteKR()">Eliminar</button>
-      <button class="btn btn-primary" onclick="saveKR()">Guardar</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-kr')">Cancel</button>
+      <button class="btn btn-danger" id="kr-delete-btn" style="display:none;" onclick="deleteKR()">Delete</button>
+      <button class="btn btn-primary" onclick="saveKR()">Save</button>
     </div>
   </div>
 </div>
 
 <div class="modal-backdrop" id="modal-task">
   <div class="modal">
-    <h3 id="task-modal-title">Nueva Tarea</h3>
-    <div class="form-group"><label class="form-label">Nombre de la tarea</label><input class="form-input" id="task-name" placeholder="¿Qué hay que hacer?"/></div>
-    <div class="form-group"><label class="form-label">Descripción</label><textarea class="form-textarea" id="task-desc"></textarea></div>
+    <h3 id="task-modal-title">Nueva Task</h3>
+    <div class="form-group"><label class="form-label">Name de la tarea</label><input class="form-input" id="task-name" placeholder="What needs to be done?"/></div>
+    <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="task-desc"></textarea></div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Responsable</label><input class="form-input" id="task-assignee"/></div>
-      <div class="form-group"><label class="form-label">Fecha límite</label><input class="form-input" type="date" id="task-due"/></div>
+      <div class="form-group"><label class="form-label">Assignee</label><input class="form-input" id="task-assignee"/></div>
+      <div class="form-group"><label class="form-label">Date límite</label><input class="form-input" type="date" id="task-due"/></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Prioridad</label>
-        <select class="form-select" id="task-priority"><option value="high">Alta</option><option value="medium">Media</option><option value="low">Baja</option></select></div>
-      <div class="form-group"><label class="form-label">Estado</label>
-        <select class="form-select" id="task-status"><option value="pendiente">Pendiente</option><option value="en-progreso">En Progreso</option><option value="completada">Completada</option><option value="bloqueada">Bloqueada</option></select></div>
+      <div class="form-group"><label class="form-label">Priority</label>
+        <select class="form-select" id="task-priority"><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></div>
+      <div class="form-group"><label class="form-label">Status</label>
+        <select class="form-select" id="task-status"><option value="pending">Pending</option><option value="in-progress">In Progress</option><option value="completed">Completed</option><option value="blocked">Blocked</option></select></div>
     </div>
-    <div class="form-group"><label class="form-label">Objetivo relacionado</label>
-      <select class="form-select" id="task-obj"><option value="">Sin objetivo asignado</option></select></div>
+    <div class="form-group"><label class="form-label">Objective relacionado</label>
+      <select class="form-select" id="task-obj"><option value="">No objective asignado</option></select></div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('modal-task')">Cancelar</button>
-      <button class="btn btn-danger" id="task-delete-btn" style="display:none;" onclick="deleteTask()">Eliminar</button>
-      <button class="btn btn-primary" onclick="saveTask()">Guardar</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-task')">Cancel</button>
+      <button class="btn btn-danger" id="task-delete-btn" style="display:none;" onclick="deleteTask()">Delete</button>
+      <button class="btn btn-primary" onclick="saveTask()">Save</button>
     </div>
   </div>
 </div>
 
 <div class="modal-backdrop" id="modal-lead">
   <div class="modal">
-    <h3 id="lead-modal-title">Nueva Oportunidad</h3>
+    <h3 id="lead-modal-title">New Opportunity</h3>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Contacto</label><input class="form-input" id="lead-contact" placeholder="Nombre del contacto o empresa"/></div>
-      <div class="form-group"><label class="form-label">Proyecto</label>
+      <div class="form-group"><label class="form-label">Contact</label><input class="form-input" id="lead-contact" placeholder="Name del contacto o empresa"/></div>
+      <div class="form-group"><label class="form-label">Project</label>
         <select class="form-select" id="lead-proyecto">
           <option value="BILIB">BILIB</option>
           <option value="NIDO">NIDO</option>
@@ -684,47 +684,47 @@
         </select></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Canal</label><input class="form-input" id="lead-canal" placeholder="Etsy / Corporativo / WhatsApp..."/></div>
-      <div class="form-group"><label class="form-label">Estado</label>
+      <div class="form-group"><label class="form-label">Channel</label><input class="form-input" id="lead-canal" placeholder="Etsy / Corporate / WhatsApp..."/></div>
+      <div class="form-group"><label class="form-label">Status</label>
         <select class="form-select" id="lead-estado">
-          <option value="Contactado">Contactado</option>
-          <option value="Negociando">Negociando</option>
-          <option value="Cerrado">Cerrado</option>
-          <option value="Perdido">Perdido</option>
+          <option value="Contacted">Contacted</option>
+          <option value="Negotiating">Negotiating</option>
+          <option value="Closed">Closed</option>
+          <option value="Lost">Lost</option>
         </select></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Valor estimado (USD)</label><input class="form-input" type="number" id="lead-valor" placeholder="0"/></div>
-      <div class="form-group"><label class="form-label">Último contacto</label><input class="form-input" type="date" id="lead-ultimo"/></div>
+      <div class="form-group"><label class="form-label">Estimated value (USD)</label><input class="form-input" type="number" id="lead-valor" placeholder="0"/></div>
+      <div class="form-group"><label class="form-label">Last contact</label><input class="form-input" type="date" id="lead-ultimo"/></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Próxima acción</label><input class="form-input" id="lead-accion" placeholder="Enviar propuesta, llamar..."/></div>
-      <div class="form-group"><label class="form-label">Fecha próxima acción</label><input class="form-input" type="date" id="lead-fecha-accion"/></div>
+      <div class="form-group"><label class="form-label">Next action</label><input class="form-input" id="lead-accion" placeholder="Send proposal, call..."/></div>
+      <div class="form-group"><label class="form-label">Date próxima acción</label><input class="form-input" type="date" id="lead-fecha-accion"/></div>
     </div>
-    <div class="form-group"><label class="form-label">Notas</label><textarea class="form-textarea" id="lead-notas" placeholder="Detalles adicionales..."></textarea></div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-textarea" id="lead-notas" placeholder="Additional details..."></textarea></div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('modal-lead')">Cancelar</button>
-      <button class="btn btn-danger" id="lead-delete-btn" style="display:none;" onclick="deleteLead()">Eliminar</button>
-      <button class="btn btn-primary" onclick="saveLead()">Guardar</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-lead')">Cancel</button>
+      <button class="btn btn-danger" id="lead-delete-btn" style="display:none;" onclick="deleteLead()">Delete</button>
+      <button class="btn btn-primary" onclick="saveLead()">Save</button>
     </div>
   </div>
 </div>
 
 <div class="modal-backdrop" id="modal-member">
   <div class="modal">
-    <h3>Miembro del Equipo</h3>
+    <h3>Miembro del Team</h3>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" id="member-name"/></div>
-      <div class="form-group"><label class="form-label">Rol</label><input class="form-input" id="member-role"/></div>
+      <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="member-name"/></div>
+      <div class="form-group"><label class="form-label">Role</label><input class="form-input" id="member-role"/></div>
     </div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="member-email" type="email"/></div>
-      <div class="form-group"><label class="form-label">Color avatar</label>
-        <select class="form-select" id="member-color"><option value="#00e5a0">Verde</option><option value="#3b82f6">Azul</option><option value="#f59e0b">Ámbar</option><option value="#a78bfa">Púrpura</option><option value="#ef4444">Rojo</option></select></div>
+      <div class="form-group"><label class="form-label">Avatar color</label>
+        <select class="form-select" id="member-color"><option value="#00e5a0">Green</option><option value="#3b82f6">Blue</option><option value="#f59e0b">Amber</option><option value="#a78bfa">Purple</option><option value="#ef4444">Red</option></select></div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('modal-member')">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveMember()">Guardar</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-member')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveMember()">Save</button>
     </div>
   </div>
 </div>
@@ -742,15 +742,15 @@ const SEED = {
     {id:'t2', name:'Juliana', role:'Co-fundadora · FP Lead',          email:'', color:'#a78bfa'},
   ],
   leads: [
-    {id:'l1', contact:'Leonardo & Sandra',  proyecto:'BILIB',     canal:'Corporativo', estado:'Negociando', valor:800,  ultimo:'2026-04-10', accion:'Enviar cotización bolsas',          fechaAccion:'2026-04-28', notas:'Cotización pendiente de bolsas'},
-    {id:'l2', contact:'Vergara Legal',       proyecto:'BILIB',     canal:'Corporativo', estado:'Contactado', valor:500,  ultimo:'2026-04-15', accion:'Entregar camisetas nuevas',         fechaAccion:'2026-05-01', notas:'Nuevas camisetas encargo'},
-    {id:'l3', contact:'Mark & Jacky',        proyecto:'BILIB',     canal:'Corporativo', estado:'Negociando', valor:1200, ultimo:'2026-04-05', accion:'Hacer seguimiento',                 fechaAccion:'2026-04-30', notas:'Seguimiento cotización'},
-    {id:'l4', contact:'ABN',                 proyecto:'BILIB',     canal:'Corporativo', estado:'Contactado', valor:400,  ultimo:'2026-04-05', accion:'Enviar fotos totebags',             fechaAccion:'2026-04-28', notas:''},
-    {id:'l5', contact:'Fundación de perros', proyecto:'BILIB',     canal:'Corporativo', estado:'Contactado', valor:300,  ultimo:'2026-03-18', accion:'Llamar seguimiento',                fechaAccion:'2026-05-05', notas:''},
-    {id:'l6', contact:'Evento ROTARY',       proyecto:'BILIB',     canal:'Corporativo', estado:'Contactado', valor:600,  ultimo:'',           accion:'Propuesta evento',                  fechaAccion:'',           notas:''},
-    {id:'l7', contact:'Luis Loaiza',         proyecto:'NIDO',      canal:'WhatsApp',    estado:'Negociando', valor:5000, ultimo:'2026-04-20', accion:'Preparar presentación',             fechaAccion:'2026-09-04', notas:'Presentación del agente AI'},
-    {id:'l8', contact:'Tomás',               proyecto:'NIDO',      canal:'Directo',     estado:'Negociando', valor:3000, ultimo:'2026-04-18', accion:'Incorporar cambios propuesta',      fechaAccion:'2026-08-04', notas:'Revisar ingresos y equilibrio'},
-    {id:'l9', contact:'Philo Legal',         proyecto:'Educación', canal:'Directo',     estado:'Contactado', valor:2000, ultimo:'',           accion:'Escribir para armar compañía USA',  fechaAccion:'',           notas:'Constitución empresa USA'},
+    {id:'l1', contact:'Leonardo & Sandra',  proyecto:'BILIB',     canal:'Corporativo', estado:'Negotiating', valor:800,  ultimo:'2026-04-10', accion:'Enviar cotización bolsas',          fechaAccion:'2026-04-28', notas:'Cotización pendiente de bolsas'},
+    {id:'l2', contact:'Vergara Legal',       proyecto:'BILIB',     canal:'Corporativo', estado:'Contacted', valor:500,  ultimo:'2026-04-15', accion:'Entregar camisetas nuevas',         fechaAccion:'2026-05-01', notas:'Nuevas camisetas encargo'},
+    {id:'l3', contact:'Mark & Jacky',        proyecto:'BILIB',     canal:'Corporativo', estado:'Negotiating', valor:1200, ultimo:'2026-04-05', accion:'Hacer seguimiento',                 fechaAccion:'2026-04-30', notas:'Seguimiento cotización'},
+    {id:'l4', contact:'ABN',                 proyecto:'BILIB',     canal:'Corporativo', estado:'Contacted', valor:400,  ultimo:'2026-04-05', accion:'Enviar fotos totebags',             fechaAccion:'2026-04-28', notas:''},
+    {id:'l5', contact:'Fundación de perros', proyecto:'BILIB',     canal:'Corporativo', estado:'Contacted', valor:300,  ultimo:'2026-03-18', accion:'Llamar seguimiento',                fechaAccion:'2026-05-05', notas:''},
+    {id:'l6', contact:'Evento ROTARY',       proyecto:'BILIB',     canal:'Corporativo', estado:'Contacted', valor:600,  ultimo:'',           accion:'Propuesta evento',                  fechaAccion:'',           notas:''},
+    {id:'l7', contact:'Luis Loaiza',         proyecto:'NIDO',      canal:'WhatsApp',    estado:'Negotiating', valor:5000, ultimo:'2026-04-20', accion:'Preparar presentación',             fechaAccion:'2026-09-04', notas:'Presentación del agente AI'},
+    {id:'l8', contact:'Tomás',               proyecto:'NIDO',      canal:'Directo',     estado:'Negotiating', valor:3000, ultimo:'2026-04-18', accion:'Incorporar cambios propuesta',      fechaAccion:'2026-08-04', notas:'Revisar ingresos y equilibrio'},
+    {id:'l9', contact:'Philo Legal',         proyecto:'Educación', canal:'Directo',     estado:'Contacted', valor:2000, ultimo:'',           accion:'Escribir para armar compañía USA',  fechaAccion:'',           notas:'Constitución empresa USA'},
   ],
   objectives: [
     {id:'o_fp',   name:'FP — Pipeline activo de ventas',          desc:'Cotizaciones activas, seguimiento a clientes y cierre de ventas.',          quarter:'Q1',    color:'#a78bfa', owner:'Juliana', open:false, krs:[
@@ -776,53 +776,53 @@ const SEED = {
       {id:'ke1', name:'Compañía constituida en USA',  start:0, target:1, current:0, unit:'empresa',   status:'on-track'},
       {id:'ke2', name:'Plan de negocios actualizado', start:0, target:1, current:0, unit:'documento', status:'on-track'},
     ]},
-    {id:'o_per',  name:'Personal — FLORES · Fotografía · UK Sales',desc:'Proyectos personales: FLORES, fotografía y ventas UK.',                  quarter:'Anual', color:'#ef4444', owner:'Camilo',  open:false, krs:[
+    {id:'o_per',  name:'Personal — FLORES · Fotografía · UK Sales',desc:'Projects personales: FLORES, fotografía y ventas UK.',                  quarter:'Anual', color:'#ef4444', owner:'Camilo',  open:false, krs:[
       {id:'kp1', name:'Reunión con distribuidor FLORES',      start:0, target:1, current:0, unit:'reunión',   status:'on-track'},
-      {id:'kp2', name:'Proyecto videos Marcela lanzado',      start:0, target:1, current:0, unit:'proyecto',  status:'on-track'},
+      {id:'kp2', name:'Project videos Marcela lanzado',      start:0, target:1, current:0, unit:'proyecto',  status:'on-track'},
       {id:'kp3', name:'Propuesta UK Sales (aerosoles) lista', start:0, target:1, current:1, unit:'propuesta', status:'done'},
     ]},
   ],
   tasks: [
-    {id:'tk1',  name:'Enviar cotización bolsas a Leonardo y Sandra',       assignee:'Juliana', due:'',           priority:'high',   status:'pendiente',   objId:'o_fp'},
-    {id:'tk2',  name:'Nuevas camisetas Vergara Legal',                     assignee:'Juliana', due:'',           priority:'medium', status:'pendiente',   objId:'o_fp'},
-    {id:'tk3',  name:'Enviar cotización bordados señora Brasilera',        assignee:'Juliana', due:'',           priority:'high',   status:'pendiente',   objId:'o_fp'},
-    {id:'tk4',  name:'Escribir a todos los que pidieron tarjetas',         assignee:'Juliana', due:'',           priority:'medium', status:'pendiente',   objId:'o_fp'},
-    {id:'tk5',  name:'Enviar a producción flags de Leonardo',              assignee:'Juliana', due:'',           priority:'medium', status:'pendiente',   objId:'o_fp'},
-    {id:'tk6',  name:'Mark & Jacky — seguimiento cotización',              assignee:'Juliana', due:'2026-03-05', priority:'high',   status:'pendiente',   objId:'o_fp'},
-    {id:'tk7',  name:'Cotización FAR / DTF',                               assignee:'Juliana', due:'2026-02-13', priority:'high',   status:'pendiente',   objId:'o_fp'},
-    {id:'tk8',  name:'Ask sample NEXT LEVEL to Sanmar (color BILIB)',      assignee:'Juliana', due:'2026-02-13', priority:'high',   status:'pendiente',   objId:'o_fp'},
-    {id:'tk9',  name:'Pedir logo a cliente',                               assignee:'Juliana', due:'2026-02-13', priority:'medium', status:'pendiente',   objId:'o_fp'},
-    {id:'tk10', name:'Armar cotización cliente nuevo',                     assignee:'Juliana', due:'2026-02-13', priority:'high',   status:'pendiente',   objId:'o_fp'},
-    {id:'tk11', name:'Fundación de perros — llamada seguimiento',          assignee:'Juliana', due:'2026-03-18', priority:'medium', status:'pendiente',   objId:'o_fp'},
-    {id:'tk12', name:'Evento ROTARY',                                      assignee:'Juliana', due:'',           priority:'medium', status:'pendiente',   objId:'o_fp'},
-    {id:'tk13', name:'Tricia — Send PDF booklet to PIP',                   assignee:'Juliana', due:'',           priority:'medium', status:'pendiente',   objId:'o_fp'},
-    {id:'tk14', name:'Vidal — seguimiento cotización',                     assignee:'Juliana', due:'2026-03-05', priority:'medium', status:'pendiente',   objId:'o_fp'},
-    {id:'tk15', name:'ABN — enviar fotos de totebags',                     assignee:'Juliana', due:'2026-03-05', priority:'medium', status:'pendiente',   objId:'o_fp'},
-    {id:'tk16', name:'Hablar con la veterinaria — link de pago',           assignee:'Juliana', due:'',           priority:'medium', status:'pendiente',   objId:'o_fp'},
-    {id:'tk17', name:'Finalizar CV con ajustes de mentoría',               assignee:'Juliana', due:'',           priority:'high',   status:'en-progreso', objId:'o_jh'},
-    {id:'tk18', name:'Montar perfil LinkedIn',                             assignee:'Juliana', due:'',           priority:'medium', status:'pendiente',   objId:'o_jh'},
-    {id:'tk19', name:'Redactar solicitud negocio hasta octubre',           assignee:'Camilo',  due:'',           priority:'high',   status:'pendiente',   objId:'o_bilib'},
-    {id:'tk20', name:'Preguntar a FP qué pasa los meses mientras se vende',assignee:'Camilo',  due:'',           priority:'medium', status:'pendiente',   objId:'o_bilib'},
-    {id:'tk21', name:'Definir mail a Michelle sobre venta bajo variable',  assignee:'Camilo',  due:'',           priority:'high',   status:'pendiente',   objId:'o_bilib'},
-    {id:'tk22', name:'Proyecto realidad virtual para las gafas',           assignee:'Camilo',  due:'',           priority:'low',    status:'en-progreso', objId:'o_bilib'},
-    {id:'tk23', name:'Campaña mailing Google Maps / revisar Twitter',      assignee:'Camilo',  due:'',           priority:'medium', status:'pendiente',   objId:'o_bilib'},
-    {id:'tk24', name:'Crear productos semanales o quincenales',            assignee:'Camilo',  due:'',           priority:'medium', status:'pendiente',   objId:'o_bilib'},
-    {id:'tk25', name:'Proyecto analítica BILIB',                           assignee:'Camilo',  due:'',           priority:'low',    status:'pendiente',   objId:'o_bilib'},
-    {id:'tk26', name:'Proyecto Aquiles — terminar excel y 2 tareas',       assignee:'Camilo',  due:'',           priority:'medium', status:'en-progreso', objId:'o_bilib'},
-    {id:'tk27', name:'Revisar propuesta con Tomás — ingresos y equilibrio',assignee:'Camilo',  due:'',           priority:'high',   status:'en-progreso', objId:'o_nido'},
-    {id:'tk28', name:'Incorporar cambios después de reunión con Tomás',    assignee:'Camilo',  due:'2026-08-04', priority:'high',   status:'pendiente',   objId:'o_nido'},
-    {id:'tk29', name:'Preparar presentación a Luis Loaiza',                assignee:'Camilo',  due:'2026-09-04', priority:'high',   status:'pendiente',   objId:'o_nido'},
-    {id:'tk30', name:'Presentar a Luis Loaiza',                            assignee:'Camilo',  due:'',           priority:'high',   status:'pendiente',   objId:'o_nido'},
-    {id:'tk31', name:'JELOU BILIB — definir integración AI',               assignee:'Camilo',  due:'',           priority:'medium', status:'pendiente',   objId:'o_nido'},
-    {id:'tk32', name:'VERSION EDUCACION AQUILES — Jelou',                  assignee:'Camilo',  due:'',           priority:'medium', status:'pendiente',   objId:'o_nido'},
-    {id:'tk33', name:'Claude — programar horas de curso',                  assignee:'Camilo',  due:'',           priority:'medium', status:'pendiente',   objId:'o_nido'},
-    {id:'tk34', name:'Escribirle a Philo Legal y armar compañía en USA',   assignee:'Camilo',  due:'',           priority:'high',   status:'en-progreso', objId:'o_edu'},
-    {id:'tk35', name:'Cambiar plan de negocios para enseñanza en IA',      assignee:'Camilo',  due:'',           priority:'high',   status:'pendiente',   objId:'o_edu'},
-    {id:'tk36', name:'Estudiar presentación AMR — FLORES',                 assignee:'Camilo',  due:'',           priority:'medium', status:'pendiente',   objId:'o_per'},
-    {id:'tk37', name:'Pedir reunión a distribuidor FLORES',                assignee:'Camilo',  due:'2026-09-04', priority:'high',   status:'pendiente',   objId:'o_per'},
-    {id:'tk38', name:'Fotos PILAR — revisar archivo',                      assignee:'Camilo',  due:'',           priority:'low',    status:'en-progreso', objId:'o_per'},
-    {id:'tk39', name:'Montar proyecto videos para Marcela',                assignee:'Camilo',  due:'',           priority:'medium', status:'en-progreso', objId:'o_per'},
-    {id:'tk40', name:'UK Sales — Estudio mercado aerosoles (Álvaro)',      assignee:'Camilo',  due:'',           priority:'medium', status:'en-progreso', objId:'o_per'},
+    {id:'tk1',  name:'Enviar cotización bolsas a Leonardo y Sandra',       assignee:'Juliana', due:'',           priority:'high',   status:'pending',   objId:'o_fp'},
+    {id:'tk2',  name:'Nuevas camisetas Vergara Legal',                     assignee:'Juliana', due:'',           priority:'medium', status:'pending',   objId:'o_fp'},
+    {id:'tk3',  name:'Enviar cotización bordados señora Brasilera',        assignee:'Juliana', due:'',           priority:'high',   status:'pending',   objId:'o_fp'},
+    {id:'tk4',  name:'Escribir a todos los que pidieron tarjetas',         assignee:'Juliana', due:'',           priority:'medium', status:'pending',   objId:'o_fp'},
+    {id:'tk5',  name:'Enviar a producción flags de Leonardo',              assignee:'Juliana', due:'',           priority:'medium', status:'pending',   objId:'o_fp'},
+    {id:'tk6',  name:'Mark & Jacky — seguimiento cotización',              assignee:'Juliana', due:'2026-03-05', priority:'high',   status:'pending',   objId:'o_fp'},
+    {id:'tk7',  name:'Cotización FAR / DTF',                               assignee:'Juliana', due:'2026-02-13', priority:'high',   status:'pending',   objId:'o_fp'},
+    {id:'tk8',  name:'Ask sample NEXT LEVEL to Sanmar (color BILIB)',      assignee:'Juliana', due:'2026-02-13', priority:'high',   status:'pending',   objId:'o_fp'},
+    {id:'tk9',  name:'Pedir logo a cliente',                               assignee:'Juliana', due:'2026-02-13', priority:'medium', status:'pending',   objId:'o_fp'},
+    {id:'tk10', name:'Armar cotización cliente nuevo',                     assignee:'Juliana', due:'2026-02-13', priority:'high',   status:'pending',   objId:'o_fp'},
+    {id:'tk11', name:'Fundación de perros — llamada seguimiento',          assignee:'Juliana', due:'2026-03-18', priority:'medium', status:'pending',   objId:'o_fp'},
+    {id:'tk12', name:'Evento ROTARY',                                      assignee:'Juliana', due:'',           priority:'medium', status:'pending',   objId:'o_fp'},
+    {id:'tk13', name:'Tricia — Send PDF booklet to PIP',                   assignee:'Juliana', due:'',           priority:'medium', status:'pending',   objId:'o_fp'},
+    {id:'tk14', name:'Vidal — seguimiento cotización',                     assignee:'Juliana', due:'2026-03-05', priority:'medium', status:'pending',   objId:'o_fp'},
+    {id:'tk15', name:'ABN — enviar fotos de totebags',                     assignee:'Juliana', due:'2026-03-05', priority:'medium', status:'pending',   objId:'o_fp'},
+    {id:'tk16', name:'Hablar con la veterinaria — link de pago',           assignee:'Juliana', due:'',           priority:'medium', status:'pending',   objId:'o_fp'},
+    {id:'tk17', name:'Finalizar CV con ajustes de mentoría',               assignee:'Juliana', due:'',           priority:'high',   status:'in-progress', objId:'o_jh'},
+    {id:'tk18', name:'Montar perfil LinkedIn',                             assignee:'Juliana', due:'',           priority:'medium', status:'pending',   objId:'o_jh'},
+    {id:'tk19', name:'Redactar solicitud negocio hasta octubre',           assignee:'Camilo',  due:'',           priority:'high',   status:'pending',   objId:'o_bilib'},
+    {id:'tk20', name:'Preguntar a FP qué pasa los meses mientras se vende',assignee:'Camilo',  due:'',           priority:'medium', status:'pending',   objId:'o_bilib'},
+    {id:'tk21', name:'Definir mail a Michelle sobre venta bajo variable',  assignee:'Camilo',  due:'',           priority:'high',   status:'pending',   objId:'o_bilib'},
+    {id:'tk22', name:'Project realidad virtual para las gafas',           assignee:'Camilo',  due:'',           priority:'low',    status:'in-progress', objId:'o_bilib'},
+    {id:'tk23', name:'Campaña mailing Google Maps / revisar Twitter',      assignee:'Camilo',  due:'',           priority:'medium', status:'pending',   objId:'o_bilib'},
+    {id:'tk24', name:'Crear productos semanales o quincenales',            assignee:'Camilo',  due:'',           priority:'medium', status:'pending',   objId:'o_bilib'},
+    {id:'tk25', name:'Project analítica BILIB',                           assignee:'Camilo',  due:'',           priority:'low',    status:'pending',   objId:'o_bilib'},
+    {id:'tk26', name:'Project Aquiles — terminar excel y 2 tareas',       assignee:'Camilo',  due:'',           priority:'medium', status:'in-progress', objId:'o_bilib'},
+    {id:'tk27', name:'Revisar propuesta con Tomás — ingresos y equilibrio',assignee:'Camilo',  due:'',           priority:'high',   status:'in-progress', objId:'o_nido'},
+    {id:'tk28', name:'Incorporar cambios después de reunión con Tomás',    assignee:'Camilo',  due:'2026-08-04', priority:'high',   status:'pending',   objId:'o_nido'},
+    {id:'tk29', name:'Preparar presentación a Luis Loaiza',                assignee:'Camilo',  due:'2026-09-04', priority:'high',   status:'pending',   objId:'o_nido'},
+    {id:'tk30', name:'Presentar a Luis Loaiza',                            assignee:'Camilo',  due:'',           priority:'high',   status:'pending',   objId:'o_nido'},
+    {id:'tk31', name:'JELOU BILIB — definir integración AI',               assignee:'Camilo',  due:'',           priority:'medium', status:'pending',   objId:'o_nido'},
+    {id:'tk32', name:'VERSION EDUCACION AQUILES — Jelou',                  assignee:'Camilo',  due:'',           priority:'medium', status:'pending',   objId:'o_nido'},
+    {id:'tk33', name:'Claude — programar horas de curso',                  assignee:'Camilo',  due:'',           priority:'medium', status:'pending',   objId:'o_nido'},
+    {id:'tk34', name:'Escribirle a Philo Legal y armar compañía en USA',   assignee:'Camilo',  due:'',           priority:'high',   status:'in-progress', objId:'o_edu'},
+    {id:'tk35', name:'Cambiar plan de negocios para enseñanza en IA',      assignee:'Camilo',  due:'',           priority:'high',   status:'pending',   objId:'o_edu'},
+    {id:'tk36', name:'Estudiar presentación AMR — FLORES',                 assignee:'Camilo',  due:'',           priority:'medium', status:'pending',   objId:'o_per'},
+    {id:'tk37', name:'Pedir reunión a distribuidor FLORES',                assignee:'Camilo',  due:'2026-09-04', priority:'high',   status:'pending',   objId:'o_per'},
+    {id:'tk38', name:'Fotos PILAR — revisar archivo',                      assignee:'Camilo',  due:'',           priority:'low',    status:'in-progress', objId:'o_per'},
+    {id:'tk39', name:'Montar proyecto videos para Marcela',                assignee:'Camilo',  due:'',           priority:'medium', status:'in-progress', objId:'o_per'},
+    {id:'tk40', name:'UK Sales — Estudio mercado aerosoles (Álvaro)',      assignee:'Camilo',  due:'',           priority:'medium', status:'in-progress', objId:'o_per'},
   ]
 };
 
@@ -862,52 +862,56 @@ function setSyncStatus(st, label) {
 
 // ==================== GOOGLE SHEETS API ====================
 async function syncFromSheets() {
-  if (!SHEET_URL) { alert('Primero configura la URL del Web App en la pestaña Sheets'); return; }
-  setSyncStatus('syncing', 'Sincronizando...');
+  if (!SHEET_URL) { alert('First configure the Web App URL en la pestaña Sheets'); return; }
+  setSyncStatus('syncing', 'Syncing...');
   try {
     const res = await fetch(SHEET_URL + '?action=getData');
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (data.error) throw new Error(data.error);
     state.objectives = data.objectives||[]; state.tasks = data.tasks||[]; state.team = data.team||[]; state.leads = data.leads||[];
-    save(); setSyncStatus('ok','Sincronizado · '+new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})); renderCurrentView();
-  } catch(err) { setSyncStatus('error','Error de conexión'); console.error(err); }
+    save(); setSyncStatus('ok','Synced · '+new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})); renderCurrentView();
+  } catch(err) { setSyncStatus('error','Connection error'); console.error(err); }
 }
 async function pushToSheets() {
-  if (!SHEET_URL) { alert('Primero configura la URL del Web App'); return; }
-  setSyncStatus('syncing','Exportando...');
+  if (!SHEET_URL) { alert('First configure the Web App URL'); return; }
+  setSyncStatus('syncing','Exporting...');
   try {
-    const res = await fetch(SHEET_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'replaceAll', data:{ objectives:state.objectives, tasks:state.tasks, team:state.team, leads:state.leads }}) });
+    // Usamos GET en lugar de POST para evitar el error de CORS preflight
+    // Google Apps Script no responde OPTIONS, así que POST con JSON falla desde el browser
+    const payload = { objectives:state.objectives, tasks:state.tasks, team:state.team, leads:state.leads };
+    const url = SHEET_URL + '?action=replaceAll&data=' + encodeURIComponent(JSON.stringify(payload));
+    const res = await fetch(url);
     const data = await res.json();
-    if (data.ok) { setSyncStatus('ok','Exportado'); }
-    else throw new Error(JSON.stringify(data));
-  } catch(e) { setSyncStatus('error','Error: '+e.message); }
+    if (data.ok) { setSyncStatus('ok','Exported ✓'); }
+    else throw new Error(data.error || JSON.stringify(data));
+  } catch(e) { setSyncStatus('error','Error: '+e.message); console.error('pushToSheets error:', e); }
 }
 async function testConnection() {
-  if (!SHEET_URL) { document.getElementById('connection-status').innerHTML='<span style="color:var(--red);">Ingresa la URL primero.</span>'; return; }
+  if (!SHEET_URL) { document.getElementById('connection-status').innerHTML='<span style="color:var(--red);">Enter the URL first.</span>'; return; }
   try {
     const res = await fetch(SHEET_URL+'?action=ping');
     const data = await res.json();
-    if (data.ok) { document.getElementById('connection-status').innerHTML='<span style="color:var(--accent);">Conexion exitosa · '+data.timestamp+'</span>'; }
+    if (data.ok) { document.getElementById('connection-status').innerHTML='<span style="color:var(--accent);">Connection successful · '+data.timestamp+'</span>'; }
     else throw new Error(JSON.stringify(data));
   } catch(e) { document.getElementById('connection-status').innerHTML='<span style="color:var(--red);">Error: '+e.message+'</span>'; }
 }
 function saveSheetURL() {
   SHEET_URL = document.getElementById('sheets-url').value.trim();
   localStorage.setItem('bilib2026_url', SHEET_URL);
-  document.getElementById('connection-status').innerHTML='<span style="color:var(--accent);">URL guardada. Haz clic en Importar para cargar datos.</span>';
+  document.getElementById('connection-status').innerHTML='<span style="color:var(--accent);">URL saved. Haz clic en Importar para cargar datos.</span>';
 }
-function startAutoSync() { if (autoSyncTimer) clearInterval(autoSyncTimer); autoSyncTimer = setInterval(syncFromSheets,30000); syncFromSheets(); setSyncStatus('ok','Auto-sync activo'); }
-function stopAutoSync()  { if (autoSyncTimer) { clearInterval(autoSyncTimer); autoSyncTimer=null; } setSyncStatus('','Auto-sync detenido'); }
+function startAutoSync() { if (autoSyncTimer) clearInterval(autoSyncTimer); autoSyncTimer = setInterval(syncFromSheets,30000); syncFromSheets(); setSyncStatus('ok','Auto-sync active'); }
+function stopAutoSync()  { if (autoSyncTimer) { clearInterval(autoSyncTimer); autoSyncTimer=null; } setSyncStatus('','Auto-sync stopped'); }
 
 // ==================== UTILS ====================
 function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2); }
 function pct(kr) { return Math.round(Math.min(100,Math.max(0,((kr.current-kr.start)/(kr.target-kr.start))*100))); }
 function objProgress(obj) { if (!obj.krs.length) return 0; return Math.round(obj.krs.reduce((s,kr)=>s+pct(kr),0)/obj.krs.length); }
 function fmtNum(n) { return n>=1000?n.toLocaleString():n; }
-function statusLabel(s)     { return {on_track:'En camino','on-track':'En camino','at-risk':'En riesgo',behind:'Atrasado',done:'Completado'}[s]||s; }
-function taskStatusLabel(s) { return {pendiente:'Pendiente','en-progreso':'En Progreso',completada:'Completada',bloqueada:'Bloqueada'}[s]||s; }
-function taskStatusColor(s) { return {pendiente:'#8a8f99','en-progreso':'#3b82f6',completada:'#00e5a0',bloqueada:'#ef4444'}[s]||'#8a8f99'; }
+function statusLabel(s)     { return {on_track:'On Track','on-track':'On Track','at-risk':'At Risk',behind:'Behind',done:'Completed'}[s]||s; }
+function taskStatusLabel(s) { return {pendiente:'Pending','in-progress':'In Progress',completada:'Completed',bloqueada:'Blocked'}[s]||s; }
+function taskStatusColor(s) { return {pendiente:'#8a8f99','in-progress':'#3b82f6',completada:'#00e5a0',bloqueada:'#ef4444'}[s]||'#8a8f99'; }
 function initials(name)     { return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
 
 // ==================== VIEWS ====================
@@ -937,21 +941,21 @@ function renderDashboard() {
   document.getElementById('dash-date').textContent = new Date().toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const totalKRs = state.objectives.reduce((s,o)=>s+o.krs.length,0);
   const doneKRs  = state.objectives.reduce((s,o)=>s+o.krs.filter(k=>k.status==='done').length,0);
-  const doneTasks= state.tasks.filter(t=>t.status==='completada').length;
-  const activeLeads = state.leads.filter(l=>l.estado==='Negociando').length;
+  const doneTasks= state.tasks.filter(t=>t.status==='completed').length;
+  const activeLeads = state.leads.filter(l=>l.estado==='Negotiating').length;
   const globalP  = state.objectives.length ? Math.round(state.objectives.reduce((s,o)=>s+objProgress(o),0)/state.objectives.length) : 0;
   document.getElementById('stats-row').innerHTML =
-    '<div class="stat-card g"><div class="stat-label">Avance Global</div><div class="stat-value">'+globalP+'%</div><div class="stat-sub">'+state.objectives.length+' objetivos activos</div></div>'+
-    '<div class="stat-card b"><div class="stat-label">Key Results</div><div class="stat-value">'+doneKRs+'/'+totalKRs+'</div><div class="stat-sub">completados</div></div>'+
-    '<div class="stat-card a"><div class="stat-label">Tareas</div><div class="stat-value">'+doneTasks+'/'+state.tasks.length+'</div><div class="stat-sub">completadas</div></div>'+
-    '<div class="stat-card p"><div class="stat-label">CRM Activo</div><div class="stat-value">'+activeLeads+'</div><div class="stat-sub">negociando</div></div>';
+    '<div class="stat-card g"><div class="stat-label">Global Progress</div><div class="stat-value">'+globalP+'%</div><div class="stat-sub">'+state.objectives.length+' active objectives</div></div>'+
+    '<div class="stat-card b"><div class="stat-label">Key Results</div><div class="stat-value">'+doneKRs+'/'+totalKRs+'</div><div class="stat-sub">completeds</div></div>'+
+    '<div class="stat-card a"><div class="stat-label">Tasks</div><div class="stat-value">'+doneTasks+'/'+state.tasks.length+'</div><div class="stat-sub">completed</div></div>'+
+    '<div class="stat-card p"><div class="stat-label">Active CRM</div><div class="stat-value">'+activeLeads+'</div><div class="stat-sub">negotiating</div></div>';
   const circ=364.4;
   document.getElementById('global-ring').style.strokeDashoffset=circ-(circ*globalP/100);
   document.getElementById('global-pct').textContent=globalP+'%';
-  document.getElementById('global-summary').textContent=state.objectives.length+' objetivos · '+totalKRs+' key results · '+state.team.length+' personas';
-  document.getElementById('dash-obj-list').innerHTML=state.objectives.map(o=>{const p=objProgress(o);return'<div><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><div style="width:8px;height:8px;border-radius:50%;background:'+o.color+';flex-shrink:0;"></div><span style="font-size:13px;font-weight:500;flex:1;">'+o.name+'</span><span style="font-family:var(--font-d);font-size:13px;font-weight:700;color:'+o.color+';">'+p+'%</span></div><div class="progress-bar"><div class="progress-fill" style="width:'+p+'%;background:'+o.color+';"></div></div></div>';}).join('')||'<p style="color:var(--text3);font-size:13px;">No hay objetivos.</p>';
+  document.getElementById('global-summary').textContent=state.objectives.length+' objectives · '+totalKRs+' key results · '+state.team.length+' people';
+  document.getElementById('dash-obj-list').innerHTML=state.objectives.map(o=>{const p=objProgress(o);return'<div><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><div style="width:8px;height:8px;border-radius:50%;background:'+o.color+';flex-shrink:0;"></div><span style="font-size:13px;font-weight:500;flex:1;">'+o.name+'</span><span style="font-family:var(--font-d);font-size:13px;font-weight:700;color:'+o.color+';">'+p+'%</span></div><div class="progress-bar"><div class="progress-fill" style="width:'+p+'%;background:'+o.color+';"></div></div></div>';}).join('')||'<p style="color:var(--text3);font-size:13px;">No hay objectives.</p>';
   const recent=[...state.tasks].sort((a,b)=>(b.due||'').localeCompare(a.due||'')).slice(0,5);
-  document.getElementById('dash-tasks').innerHTML=recent.length?'<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="text-align:left;font-size:11px;color:var(--text3);text-transform:uppercase;padding:0 12px 8px;font-weight:500;">Tarea</th><th style="text-align:left;font-size:11px;color:var(--text3);text-transform:uppercase;padding:0 12px 8px;font-weight:500;">Responsable</th><th style="text-align:left;font-size:11px;color:var(--text3);text-transform:uppercase;padding:0 12px 8px;font-weight:500;">Estado</th></tr></thead><tbody>'+recent.map(t=>'<tr><td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border);">'+t.name+'</td><td style="padding:10px 12px;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border);">'+( t.assignee||'—')+'</td><td style="padding:10px 12px;border-bottom:1px solid var(--border);"><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 8px;border-radius:20px;background:'+taskStatusColor(t.status)+'18;color:'+taskStatusColor(t.status)+';"><span style="width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block;"></span>'+taskStatusLabel(t.status)+'</span></td></tr>').join('')+'</tbody></table>':'<p style="color:var(--text3);font-size:13px;padding:12px;">No hay tareas.</p>';
+  document.getElementById('dash-tasks').innerHTML=recent.length?'<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="text-align:left;font-size:11px;color:var(--text3);text-transform:uppercase;padding:0 12px 8px;font-weight:500;">Task</th><th style="text-align:left;font-size:11px;color:var(--text3);text-transform:uppercase;padding:0 12px 8px;font-weight:500;">Assignee</th><th style="text-align:left;font-size:11px;color:var(--text3);text-transform:uppercase;padding:0 12px 8px;font-weight:500;">Status</th></tr></thead><tbody>'+recent.map(t=>'<tr><td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border);">'+t.name+'</td><td style="padding:10px 12px;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border);">'+( t.assignee||'—')+'</td><td style="padding:10px 12px;border-bottom:1px solid var(--border);"><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 8px;border-radius:20px;background:'+taskStatusColor(t.status)+'18;color:'+taskStatusColor(t.status)+';"><span style="width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block;"></span>'+taskStatusLabel(t.status)+'</span></td></tr>').join('')+'</tbody></table>':'<p style="color:var(--text3);font-size:13px;padding:12px;">No tasks.</p>';
 }
 
 // ==================== OKRs ====================
@@ -959,15 +963,15 @@ function filterQ(q,el){state._currentQ=q;document.querySelectorAll('.q-tab').for
 function renderOKRs() {
   const list=document.getElementById('objectives-list');
   const filtered=state._currentQ==='all'?state.objectives:state.objectives.filter(o=>o.quarter===state._currentQ);
-  if (!filtered.length){list.innerHTML='<div style="text-align:center;padding:3rem;color:var(--text3);"><p>No hay objetivos para este trimestre.</p></div>';return;}
+  if (!filtered.length){list.innerHTML='<div style="text-align:center;padding:3rem;color:var(--text3);"><p>No objectives for this quarter.</p></div>';return;}
   list.innerHTML=filtered.map(o=>renderObjCard(o)).join('');
 }
 function renderObjCard(o) {
   const p=objProgress(o);
   const krList=o.krs.map(kr=>{const kp=pct(kr);return'<div class="kr-item"><span class="kr-icon">◈</span><div class="kr-content"><div class="kr-name">'+kr.name+'</div><div class="kr-detail">'+fmtNum(kr.current)+' / '+fmtNum(kr.target)+' '+kr.unit+'</div></div><div class="kr-right"><span class="status-badge '+kr.status+'"><span class="status-dot"></span>'+statusLabel(kr.status)+'</span><div class="kr-progress-bar"><div class="kr-progress-fill" style="width:'+kp+'%;background:'+o.color+';"></div></div><span class="kr-pct" style="color:'+o.color+';">'+kp+'%</span><button class="kr-edit-btn" onclick="openEditKR(\''+o.id+'\',\''+kr.id+'\')">✏</button></div></div>';}).join('');
   const objTasks=state.tasks.filter(t=>t.objId===o.id);
-  const taskRows=objTasks.map(t=>'<tr onclick="openEditTask(\''+t.id+'\')" style="cursor:pointer;"><td><span style="font-weight:500;">'+t.name+'</span></td><td style="color:var(--text2);">'+( t.assignee||'—')+'</td><td><span class="priority-badge '+t.priority+'">'+({high:'Alta',medium:'Media',low:'Baja'}[t.priority]||t.priority)+'</span></td><td><span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;background:'+taskStatusColor(t.status)+'18;color:'+taskStatusColor(t.status)+';"><span style="width:4px;height:4px;border-radius:50%;background:currentColor;display:inline-block;"></span>'+taskStatusLabel(t.status)+'</span></td><td style="color:var(--text2);">'+(t.due||'—')+'</td></tr>').join('');
-  return '<div class="obj-card '+(o.open?'open':'')+'" id="obj-'+o.id+'"><div class="obj-header" onclick="toggleObj(\''+o.id+'\')"><div class="obj-color-dot" style="background:'+o.color+';"></div><div class="obj-title-wrap"><div class="obj-title">'+o.name+'</div><div class="obj-meta">'+o.quarter+' · '+o.owner+' · '+o.krs.length+' KRs · '+objTasks.length+' tareas</div></div><div class="obj-progress-wrap"><div class="progress-bar"><div class="progress-fill" style="width:'+p+'%;background:'+o.color+';"></div></div><span class="progress-pct" style="color:'+o.color+';">'+p+'%</span></div><button onclick="event.stopPropagation();openEditObjective(\''+o.id+'\')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px 8px;border-radius:6px;font-size:13px;" onmouseover="this.style.color=\'var(--text)\'" onmouseout="this.style.color=\'var(--text3)\'">✏</button><span class="obj-chevron">▼</span></div><div class="obj-body">'+(o.desc?'<p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem;">'+o.desc+'</p>':'')+'<div class="section-title">Key Results</div><div class="kr-list" style="margin-top:10px;">'+krList+'</div><button class="add-btn" onclick="openAddKR(\''+o.id+'\')" style="margin-top:8px;">＋ Key Result</button>'+(taskRows?'<div class="section-title" style="margin-top:1.5rem;">Tareas</div><div style="overflow-x:auto;"><table><tbody>'+taskRows+'</tbody></table></div>':'')+'<button class="add-btn" onclick="openAddTask(\''+o.id+'\')">＋ Tarea</button></div></div>';
+  const taskRows=objTasks.map(t=>'<tr onclick="openEditTask(\''+t.id+'\')" style="cursor:pointer;"><td><span style="font-weight:500;">'+t.name+'</span></td><td style="color:var(--text2);">'+( t.assignee||'—')+'</td><td><span class="priority-badge '+t.priority+'">'+({high:'High',medium:'Medium',low:'Low'}[t.priority]||t.priority)+'</span></td><td><span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;background:'+taskStatusColor(t.status)+'18;color:'+taskStatusColor(t.status)+';"><span style="width:4px;height:4px;border-radius:50%;background:currentColor;display:inline-block;"></span>'+taskStatusLabel(t.status)+'</span></td><td style="color:var(--text2);">'+(t.due||'—')+'</td></tr>').join('');
+  return '<div class="obj-card '+(o.open?'open':'')+'" id="obj-'+o.id+'"><div class="obj-header" onclick="toggleObj(\''+o.id+'\')"><div class="obj-color-dot" style="background:'+o.color+';"></div><div class="obj-title-wrap"><div class="obj-title">'+o.name+'</div><div class="obj-meta">'+o.quarter+' · '+o.owner+' · '+o.krs.length+' KRs · '+objTasks.length+' tareas</div></div><div class="obj-progress-wrap"><div class="progress-bar"><div class="progress-fill" style="width:'+p+'%;background:'+o.color+';"></div></div><span class="progress-pct" style="color:'+o.color+';">'+p+'%</span></div><button onclick="event.stopPropagation();openEditObjective(\''+o.id+'\')" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:4px 8px;border-radius:6px;font-size:13px;" onmouseover="this.style.color=\'var(--text)\'" onmouseout="this.style.color=\'var(--text3)\'">✏</button><span class="obj-chevron">▼</span></div><div class="obj-body">'+(o.desc?'<p style="font-size:13px;color:var(--text2);margin-bottom:1.25rem;">'+o.desc+'</p>':'')+'<div class="section-title">Key Results</div><div class="kr-list" style="margin-top:10px;">'+krList+'</div><button class="add-btn" onclick="openAddKR(\''+o.id+'\')" style="margin-top:8px;">＋ Key Result</button>'+(taskRows?'<div class="section-title" style="margin-top:1.5rem;">Tasks</div><div style="overflow-x:auto;"><table><tbody>'+taskRows+'</tbody></table></div>':'')+'<button class="add-btn" onclick="openAddTask(\''+o.id+'\')">＋ Task</button></div></div>';
 }
 function toggleObj(id) { const o=state.objectives.find(x=>x.id===id); if(o){o.open=!o.open;renderOKRs();} }
 
@@ -979,21 +983,21 @@ function renderTasks() {
   if (state._taskFilters.priority) list=list.filter(t=>t.priority===state._taskFilters.priority);
   if (state._taskFilters.search)   list=list.filter(t=>t.name.toLowerCase().includes(state._taskFilters.search.toLowerCase()));
   const tbody=document.getElementById('tasks-tbody');
-  if (!list.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text3);">No hay tareas.</td></tr>';return;}
+  if (!list.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text3);">No tasks.</td></tr>';return;}
   tbody.innerHTML=list.map(t=>{
     const obj=state.objectives.find(o=>o.id===t.objId);
-    return '<tr onclick="openEditTask(\''+t.id+'\')" style="cursor:pointer;"><td style="font-weight:500;">'+t.name+'</td><td style="color:var(--text2);font-size:12px;">'+(obj?obj.name.slice(0,28)+'…':'—')+'</td><td style="color:var(--text2);">'+(t.assignee||'—')+'</td><td><span class="priority-badge '+t.priority+'">'+({high:'Alta',medium:'Media',low:'Baja'}[t.priority]||t.priority)+'</span></td><td><span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;background:'+taskStatusColor(t.status)+'18;color:'+taskStatusColor(t.status)+';"><span style="width:4px;height:4px;border-radius:50%;background:currentColor;display:inline-block;"></span>'+taskStatusLabel(t.status)+'</span></td><td style="color:var(--text2);font-size:12px;">'+(t.due||'—')+'</td><td><button onclick="event.stopPropagation();openEditTask(\''+t.id+'\')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;">✏</button></td></tr>';
+    return '<tr onclick="openEditTask(\''+t.id+'\')" style="cursor:pointer;"><td style="font-weight:500;">'+t.name+'</td><td style="color:var(--text2);font-size:12px;">'+(obj?obj.name.slice(0,28)+'…':'—')+'</td><td style="color:var(--text2);">'+(t.assignee||'—')+'</td><td><span class="priority-badge '+t.priority+'">'+({high:'High',medium:'Medium',low:'Low'}[t.priority]||t.priority)+'</span></td><td><span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;background:'+taskStatusColor(t.status)+'18;color:'+taskStatusColor(t.status)+';"><span style="width:4px;height:4px;border-radius:50%;background:currentColor;display:inline-block;"></span>'+taskStatusLabel(t.status)+'</span></td><td style="color:var(--text2);font-size:12px;">'+(t.due||'—')+'</td><td><button onclick="event.stopPropagation();openEditTask(\''+t.id+'\')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;">✏</button></td></tr>';
   }).join('');
 }
 
 // ==================== TEAM ====================
 function renderTeam() {
   const grid=document.getElementById('team-grid');
-  if (!state.team.length){grid.innerHTML='<p style="color:var(--text3);">No hay miembros.</p>';return;}
+  if (!state.team.length){grid.innerHTML='<p style="color:var(--text3);">No members.</p>';return;}
   grid.innerHTML=state.team.map(m=>{
     const tc=state.tasks.filter(t=>t.assignee===m.name).length;
-    const dc=state.tasks.filter(t=>t.assignee===m.name&&t.status==='completada').length;
-    return '<div class="team-card"><div class="member-avatar" style="background:'+m.color+'20;color:'+m.color+';border:2px solid '+m.color+'40;">'+initials(m.name)+'</div><div class="member-name">'+m.name+'</div><div class="member-role">'+m.role+'</div>'+(m.email?'<div style="font-size:11px;color:var(--text3);margin-top:4px;">'+m.email+'</div>':'')+'<div style="margin-top:12px;font-size:12px;color:var(--text2);">'+dc+'/'+tc+' tareas completadas</div></div>';
+    const dc=state.tasks.filter(t=>t.assignee===m.name&&t.status==='completed').length;
+    return '<div class="team-card"><div class="member-avatar" style="background:'+m.color+'20;color:'+m.color+';border:2px solid '+m.color+'40;">'+initials(m.name)+'</div><div class="member-name">'+m.name+'</div><div class="member-role">'+m.role+'</div>'+(m.email?'<div style="font-size:11px;color:var(--text3);margin-top:4px;">'+m.email+'</div>':'')+'<div style="margin-top:12px;font-size:12px;color:var(--text2);">'+dc+'/'+tc+' tareas completed</div></div>';
   }).join('');
 }
 
@@ -1008,8 +1012,8 @@ function renderTimeline() {
 }
 
 // ==================== CRM ====================
-const CRM_ESTADOS=['Contactado','Negociando','Cerrado','Perdido'];
-const CRM_COLORS={Contactado:'#3b82f6',Negociando:'#f59e0b',Cerrado:'#00e5a0',Perdido:'#ef4444'};
+const CRM_ESTADOS=['Contacted','Negotiating','Closed','Lost'];
+const CRM_COLORS={Contacted:'#3b82f6',Negotiating:'#f59e0b',Closed:'#00e5a0',Lost:'#ef4444'};
 function filterCRM(key,val){state._crmFilters[key]=val;renderCRM();}
 function renderCRM() {
   let list=state.leads;
@@ -1019,16 +1023,16 @@ function renderCRM() {
     const cards=list.filter(l=>l.estado===est);
     const total=cards.reduce((s,l)=>s+(l.valor||0),0);
     const color=CRM_COLORS[est];
-    return '<div class="kanban-col"><div class="kanban-col-title" style="color:'+color+';"><span style="width:8px;height:8px;border-radius:50%;background:'+color+';display:inline-block;"></span>'+est+'<span class="kanban-col-count">'+cards.length+'</span>'+(total?'<span style="margin-left:auto;font-size:10px;color:var(--text3);">$'+total.toLocaleString()+'</span>':'')+'</div>'+cards.map(l=>'<div class="lead-card" onclick="openEditLead(\''+l.id+'\')"><div class="lead-card-contact">'+l.contact+'</div><div class="lead-card-meta"><span style="background:var(--bg2);padding:1px 6px;border-radius:4px;">'+l.proyecto+'</span>'+(l.canal?'<span>'+l.canal+'</span>':'')+'</div>'+(l.valor?'<div class="lead-card-valor">$'+l.valor.toLocaleString()+'</div>':'')+(l.accion?'<div class="lead-card-accion">→ '+l.accion+(l.fechaAccion?' · '+l.fechaAccion:'')+'</div>':'')+'</div>').join('')+'<button class="add-btn" onclick="openAddLead(\''+est+'\')" style="margin-top:4px;font-size:12px;">＋ Agregar</button></div>';
+    return '<div class="kanban-col"><div class="kanban-col-title" style="color:'+color+';"><span style="width:8px;height:8px;border-radius:50%;background:'+color+';display:inline-block;"></span>'+est+'<span class="kanban-col-count">'+cards.length+'</span>'+(total?'<span style="margin-left:auto;font-size:10px;color:var(--text3);">$'+total.toLocaleString()+'</span>':'')+'</div>'+cards.map(l=>'<div class="lead-card" onclick="openEditLead(\''+l.id+'\')"><div class="lead-card-contact">'+l.contact+'</div><div class="lead-card-meta"><span style="background:var(--bg2);padding:1px 6px;border-radius:4px;">'+l.proyecto+'</span>'+(l.canal?'<span>'+l.canal+'</span>':'')+'</div>'+(l.valor?'<div class="lead-card-valor">$'+l.valor.toLocaleString()+'</div>':'')+(l.accion?'<div class="lead-card-accion">→ '+l.accion+(l.fechaAccion?' · '+l.fechaAccion:'')+'</div>':'')+'</div>').join('')+'<button class="add-btn" onclick="openAddLead(\''+est+'\')" style="margin-top:4px;font-size:12px;">＋ Add</button></div>';
   }).join('');
 }
 function openAddLead(estado) {
   state._editLeadId=null;
-  document.getElementById('lead-modal-title').textContent='Nueva Oportunidad';
+  document.getElementById('lead-modal-title').textContent='New Opportunity';
   document.getElementById('lead-contact').value='';
   document.getElementById('lead-proyecto').value='BILIB';
   document.getElementById('lead-canal').value='';
-  document.getElementById('lead-estado').value=estado||'Contactado';
+  document.getElementById('lead-estado').value=estado||'Contacted';
   document.getElementById('lead-valor').value='';
   document.getElementById('lead-ultimo').value='';
   document.getElementById('lead-accion').value='';
@@ -1040,7 +1044,7 @@ function openAddLead(estado) {
 function openEditLead(id) {
   const l=state.leads.find(x=>x.id===id); if (!l) return;
   state._editLeadId=id;
-  document.getElementById('lead-modal-title').textContent='Editar Oportunidad';
+  document.getElementById('lead-modal-title').textContent='Edit Opportunity';
   document.getElementById('lead-contact').value=l.contact;
   document.getElementById('lead-proyecto').value=l.proyecto;
   document.getElementById('lead-canal').value=l.canal||'';
@@ -1055,7 +1059,7 @@ function openEditLead(id) {
 }
 function saveLead() {
   const contact=document.getElementById('lead-contact').value.trim();
-  if (!contact){alert('El contacto es requerido.');return;}
+  if (!contact){alert('Contact is required.');return;}
   const data={contact,proyecto:document.getElementById('lead-proyecto').value,canal:document.getElementById('lead-canal').value.trim(),estado:document.getElementById('lead-estado').value,valor:+document.getElementById('lead-valor').value||0,ultimo:document.getElementById('lead-ultimo').value,accion:document.getElementById('lead-accion').value.trim(),fechaAccion:document.getElementById('lead-fecha-accion').value,notas:document.getElementById('lead-notas').value.trim()};
   if (state._editLeadId){const l=state.leads.find(x=>x.id===state._editLeadId);if(l)Object.assign(l,data);}
   else{state.leads.push({id:uid(),...data});}
@@ -1063,7 +1067,7 @@ function saveLead() {
 }
 function deleteLead() {
   if (!state._editLeadId) return;
-  if (!confirm('Eliminar esta oportunidad?')) return;
+  if (!confirm('Delete esta oportunidad?')) return;
   state.leads=state.leads.filter(l=>l.id!==state._editLeadId);
   save();closeModal('modal-lead');renderCRM();
 }
@@ -1071,20 +1075,20 @@ function deleteLead() {
 // ==================== MODALS ====================
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 function openModal(id) {document.getElementById(id).classList.add('open');}
-function openAddObjective(){state._editObjId=null;document.getElementById('obj-modal-title').textContent='Nuevo Objetivo';document.getElementById('obj-name').value='';document.getElementById('obj-desc').value='';document.getElementById('obj-quarter').value='Q1';document.getElementById('obj-color').value='#00e5a0';document.getElementById('obj-owner').value='';document.getElementById('obj-delete-btn').style.display='none';openModal('modal-objective');}
-function openEditObjective(id){const o=state.objectives.find(x=>x.id===id);if(!o)return;state._editObjId=id;document.getElementById('obj-modal-title').textContent='Editar Objetivo';document.getElementById('obj-name').value=o.name;document.getElementById('obj-desc').value=o.desc||'';document.getElementById('obj-quarter').value=o.quarter;document.getElementById('obj-color').value=o.color;document.getElementById('obj-owner').value=o.owner||'';document.getElementById('obj-delete-btn').style.display='';openModal('modal-objective');}
-function saveObjective(){const name=document.getElementById('obj-name').value.trim();if(!name){alert('El nombre es requerido.');return;}if(state._editObjId){const o=state.objectives.find(x=>x.id===state._editObjId);if(o){o.name=name;o.desc=document.getElementById('obj-desc').value.trim();o.quarter=document.getElementById('obj-quarter').value;o.color=document.getElementById('obj-color').value;o.owner=document.getElementById('obj-owner').value.trim();}}else{state.objectives.push({id:uid(),name,desc:document.getElementById('obj-desc').value.trim(),quarter:document.getElementById('obj-quarter').value,color:document.getElementById('obj-color').value,owner:document.getElementById('obj-owner').value.trim(),open:false,krs:[]});}save();closeModal('modal-objective');renderCurrentView();}
-function deleteObjective(){if(!state._editObjId)return;if(!confirm('Eliminar este objetivo y sus KRs?'))return;state.objectives=state.objectives.filter(o=>o.id!==state._editObjId);state.tasks=state.tasks.filter(t=>t.objId!==state._editObjId);save();closeModal('modal-objective');renderCurrentView();}
-function openAddKR(objId){state._editKrObjId=objId;state._editKrId=null;document.getElementById('kr-modal-title').textContent='Nuevo Key Result';document.getElementById('kr-name').value='';document.getElementById('kr-start').value=0;document.getElementById('kr-target').value=100;document.getElementById('kr-current').value=0;document.getElementById('kr-unit').value='';document.getElementById('kr-status').value='on-track';document.getElementById('kr-delete-btn').style.display='none';openModal('modal-kr');}
-function openEditKR(objId,krId){const o=state.objectives.find(x=>x.id===objId);const kr=o&&o.krs.find(k=>k.id===krId);if(!kr)return;state._editKrObjId=objId;state._editKrId=krId;document.getElementById('kr-modal-title').textContent='Editar Key Result';document.getElementById('kr-name').value=kr.name;document.getElementById('kr-start').value=kr.start;document.getElementById('kr-target').value=kr.target;document.getElementById('kr-current').value=kr.current;document.getElementById('kr-unit').value=kr.unit||'';document.getElementById('kr-status').value=kr.status;document.getElementById('kr-delete-btn').style.display='';openModal('modal-kr');}
-function saveKR(){const name=document.getElementById('kr-name').value.trim();if(!name){alert('La descripcion es requerida.');return;}const o=state.objectives.find(x=>x.id===state._editKrObjId);if(!o)return;const data={name,start:+document.getElementById('kr-start').value||0,target:+document.getElementById('kr-target').value||100,current:+document.getElementById('kr-current').value||0,unit:document.getElementById('kr-unit').value.trim(),status:document.getElementById('kr-status').value};if(state._editKrId){const kr=o.krs.find(k=>k.id===state._editKrId);if(kr)Object.assign(kr,data);}else{o.krs.push({id:uid(),...data});}save();closeModal('modal-kr');renderCurrentView();}
-function deleteKR(){const o=state.objectives.find(x=>x.id===state._editKrObjId);if(!o||!state._editKrId)return;if(!confirm('Eliminar este Key Result?'))return;o.krs=o.krs.filter(k=>k.id!==state._editKrId);save();closeModal('modal-kr');renderCurrentView();}
-function openAddTask(objId){state._editTaskId=null;document.getElementById('task-modal-title').textContent='Nueva Tarea';document.getElementById('task-name').value='';document.getElementById('task-desc').value='';document.getElementById('task-assignee').value='';document.getElementById('task-due').value='';document.getElementById('task-priority').value='medium';document.getElementById('task-status').value='pendiente';const sel=document.getElementById('task-obj');sel.innerHTML='<option value="">Sin objetivo</option>'+state.objectives.map(o=>'<option value="'+o.id+'"'+(objId===o.id?' selected':'')+'>'+o.name+'</option>').join('');document.getElementById('task-delete-btn').style.display='none';openModal('modal-task');}
-function openEditTask(id){const t=state.tasks.find(x=>x.id===id);if(!t)return;state._editTaskId=id;document.getElementById('task-modal-title').textContent='Editar Tarea';document.getElementById('task-name').value=t.name;document.getElementById('task-desc').value=t.desc||'';document.getElementById('task-assignee').value=t.assignee||'';document.getElementById('task-due').value=t.due||'';document.getElementById('task-priority').value=t.priority||'medium';document.getElementById('task-status').value=t.status||'pendiente';const sel=document.getElementById('task-obj');sel.innerHTML='<option value="">Sin objetivo</option>'+state.objectives.map(o=>'<option value="'+o.id+'"'+(t.objId===o.id?' selected':'')+'>'+o.name+'</option>').join('');document.getElementById('task-delete-btn').style.display='';openModal('modal-task');}
-function saveTask(){const name=document.getElementById('task-name').value.trim();if(!name){alert('El nombre es requerido.');return;}const data={name,desc:document.getElementById('task-desc').value.trim(),assignee:document.getElementById('task-assignee').value.trim(),due:document.getElementById('task-due').value,priority:document.getElementById('task-priority').value,status:document.getElementById('task-status').value,objId:document.getElementById('task-obj').value};if(state._editTaskId){const t=state.tasks.find(x=>x.id===state._editTaskId);if(t)Object.assign(t,data);}else{state.tasks.push({id:uid(),...data});}save();closeModal('modal-task');renderCurrentView();}
-function deleteTask(){if(!state._editTaskId)return;if(!confirm('Eliminar esta tarea?'))return;state.tasks=state.tasks.filter(t=>t.id!==state._editTaskId);save();closeModal('modal-task');renderCurrentView();}
+function openAddObjective(){state._editObjId=null;document.getElementById('obj-modal-title').textContent='Nuevo Objective';document.getElementById('obj-name').value='';document.getElementById('obj-desc').value='';document.getElementById('obj-quarter').value='Q1';document.getElementById('obj-color').value='#00e5a0';document.getElementById('obj-owner').value='';document.getElementById('obj-delete-btn').style.display='none';openModal('modal-objective');}
+function openEditObjective(id){const o=state.objectives.find(x=>x.id===id);if(!o)return;state._editObjId=id;document.getElementById('obj-modal-title').textContent='Editar Objective';document.getElementById('obj-name').value=o.name;document.getElementById('obj-desc').value=o.desc||'';document.getElementById('obj-quarter').value=o.quarter;document.getElementById('obj-color').value=o.color;document.getElementById('obj-owner').value=o.owner||'';document.getElementById('obj-delete-btn').style.display='';openModal('modal-objective');}
+function saveObjective(){const name=document.getElementById('obj-name').value.trim();if(!name){alert('Name is required.');return;}if(state._editObjId){const o=state.objectives.find(x=>x.id===state._editObjId);if(o){o.name=name;o.desc=document.getElementById('obj-desc').value.trim();o.quarter=document.getElementById('obj-quarter').value;o.color=document.getElementById('obj-color').value;o.owner=document.getElementById('obj-owner').value.trim();}}else{state.objectives.push({id:uid(),name,desc:document.getElementById('obj-desc').value.trim(),quarter:document.getElementById('obj-quarter').value,color:document.getElementById('obj-color').value,owner:document.getElementById('obj-owner').value.trim(),open:false,krs:[]});}save();closeModal('modal-objective');renderCurrentView();}
+function deleteObjective(){if(!state._editObjId)return;if(!confirm('Delete este objetivo y sus KRs?'))return;state.objectives=state.objectives.filter(o=>o.id!==state._editObjId);state.tasks=state.tasks.filter(t=>t.objId!==state._editObjId);save();closeModal('modal-objective');renderCurrentView();}
+function openAddKR(objId){state._editKrObjId=objId;state._editKrId=null;document.getElementById('kr-modal-title').textContent='New Key Result';document.getElementById('kr-name').value='';document.getElementById('kr-start').value=0;document.getElementById('kr-target').value=100;document.getElementById('kr-current').value=0;document.getElementById('kr-unit').value='';document.getElementById('kr-status').value='on-track';document.getElementById('kr-delete-btn').style.display='none';openModal('modal-kr');}
+function openEditKR(objId,krId){const o=state.objectives.find(x=>x.id===objId);const kr=o&&o.krs.find(k=>k.id===krId);if(!kr)return;state._editKrObjId=objId;state._editKrId=krId;document.getElementById('kr-modal-title').textContent='Edit Key Result';document.getElementById('kr-name').value=kr.name;document.getElementById('kr-start').value=kr.start;document.getElementById('kr-target').value=kr.target;document.getElementById('kr-current').value=kr.current;document.getElementById('kr-unit').value=kr.unit||'';document.getElementById('kr-status').value=kr.status;document.getElementById('kr-delete-btn').style.display='';openModal('modal-kr');}
+function saveKR(){const name=document.getElementById('kr-name').value.trim();if(!name){alert('Description is required.');return;}const o=state.objectives.find(x=>x.id===state._editKrObjId);if(!o)return;const data={name,start:+document.getElementById('kr-start').value||0,target:+document.getElementById('kr-target').value||100,current:+document.getElementById('kr-current').value||0,unit:document.getElementById('kr-unit').value.trim(),status:document.getElementById('kr-status').value};if(state._editKrId){const kr=o.krs.find(k=>k.id===state._editKrId);if(kr)Object.assign(kr,data);}else{o.krs.push({id:uid(),...data});}save();closeModal('modal-kr');renderCurrentView();}
+function deleteKR(){const o=state.objectives.find(x=>x.id===state._editKrObjId);if(!o||!state._editKrId)return;if(!confirm('Delete este Key Result?'))return;o.krs=o.krs.filter(k=>k.id!==state._editKrId);save();closeModal('modal-kr');renderCurrentView();}
+function openAddTask(objId){state._editTaskId=null;document.getElementById('task-modal-title').textContent='Nueva Task';document.getElementById('task-name').value='';document.getElementById('task-desc').value='';document.getElementById('task-assignee').value='';document.getElementById('task-due').value='';document.getElementById('task-priority').value='medium';document.getElementById('task-status').value='pending';const sel=document.getElementById('task-obj');sel.innerHTML='<option value="">No objective</option>'+state.objectives.map(o=>'<option value="'+o.id+'"'+(objId===o.id?' selected':'')+'>'+o.name+'</option>').join('');document.getElementById('task-delete-btn').style.display='none';openModal('modal-task');}
+function openEditTask(id){const t=state.tasks.find(x=>x.id===id);if(!t)return;state._editTaskId=id;document.getElementById('task-modal-title').textContent='Editar Task';document.getElementById('task-name').value=t.name;document.getElementById('task-desc').value=t.desc||'';document.getElementById('task-assignee').value=t.assignee||'';document.getElementById('task-due').value=t.due||'';document.getElementById('task-priority').value=t.priority||'medium';document.getElementById('task-status').value=t.status||'pending';const sel=document.getElementById('task-obj');sel.innerHTML='<option value="">No objective</option>'+state.objectives.map(o=>'<option value="'+o.id+'"'+(t.objId===o.id?' selected':'')+'>'+o.name+'</option>').join('');document.getElementById('task-delete-btn').style.display='';openModal('modal-task');}
+function saveTask(){const name=document.getElementById('task-name').value.trim();if(!name){alert('Name is required.');return;}const data={name,desc:document.getElementById('task-desc').value.trim(),assignee:document.getElementById('task-assignee').value.trim(),due:document.getElementById('task-due').value,priority:document.getElementById('task-priority').value,status:document.getElementById('task-status').value,objId:document.getElementById('task-obj').value};if(state._editTaskId){const t=state.tasks.find(x=>x.id===state._editTaskId);if(t)Object.assign(t,data);}else{state.tasks.push({id:uid(),...data});}save();closeModal('modal-task');renderCurrentView();}
+function deleteTask(){if(!state._editTaskId)return;if(!confirm('Delete esta tarea?'))return;state.tasks=state.tasks.filter(t=>t.id!==state._editTaskId);save();closeModal('modal-task');renderCurrentView();}
 function openAddMember(){document.getElementById('member-name').value='';document.getElementById('member-role').value='';document.getElementById('member-email').value='';document.getElementById('member-color').value='#00e5a0';openModal('modal-member');}
-function saveMember(){const name=document.getElementById('member-name').value.trim();if(!name){alert('El nombre es requerido.');return;}state.team.push({id:uid(),name,role:document.getElementById('member-role').value.trim(),email:document.getElementById('member-email').value.trim(),color:document.getElementById('member-color').value});save();closeModal('modal-member');renderTeam();}
+function saveMember(){const name=document.getElementById('member-name').value.trim();if(!name){alert('Name is required.');return;}state.team.push({id:uid(),name,role:document.getElementById('member-role').value.trim(),email:document.getElementById('member-email').value.trim(),color:document.getElementById('member-color').value});save();closeModal('modal-member');renderTeam();}
 
 
 // ==================== WEEKLY ====================
@@ -1115,7 +1119,7 @@ function getWeekDates(offset) {
 function weekLabel(offset) {
   const days = getWeekDates(offset);
   const fmt = d => d.toLocaleDateString('es-ES', {day:'numeric', month:'short'});
-  const prefix = offset === 0 ? 'Esta semana  ' : offset === -1 ? 'Semana pasada  ' : '';
+  const prefix = offset === 0 ? 'This week  ' : offset === -1 ? 'Last week  ' : '';
   return prefix + fmt(days[0]) + ' – ' + fmt(days[6]);
 }
 
@@ -1190,20 +1194,20 @@ function renderWeekPlan() {
   // Objective selector
   const sel = document.getElementById('new-goal-obj');
   if (sel) {
-    sel.innerHTML = '<option value="">Sin objetivo</option>' +
+    sel.innerHTML = '<option value="">No objective</option>' +
       state.objectives.map(o => '<option value="'+o.id+'">'+o.name.slice(0,35)+'</option>').join('');
   }
 
   // Goals count badge
   const badge = document.getElementById('goal-count-badge');
   const done = wd.goals.filter(g => g.done).length;
-  if (badge) badge.textContent = done + '/' + wd.goals.length + ' listas';
+  if (badge) badge.textContent = done + '/' + wd.goals.length + ' done';
 
   // Goals list
   const list = document.getElementById('week-goals-list');
   if (!list) return;
   if (!wd.goals.length) {
-    list.innerHTML = '<div style="padding:1.5rem 0;text-align:center;color:var(--text3);font-size:13px;">No hay metas para esta semana. Agrega la primera arriba.</div>';
+    list.innerHTML = '<div style="padding:1.5rem 0;text-align:center;color:var(--text3);font-size:13px;">No goals for this week. Add the first one above.</div>';
     return;
   }
   list.innerHTML = wd.goals.map(g => {
@@ -1253,34 +1257,34 @@ function renderWeekReview() {
   // Headline
   const hl = document.getElementById('review-headline');
   const sl = document.getElementById('review-subline');
-  if (hl) hl.textContent = compPct >= 80 ? 'Semana excelente' : compPct >= 50 ? 'Buen avance' : 'Semana en proceso';
-  if (sl) sl.textContent = doneGoals + ' de ' + totalGoals + ' metas completadas · ' + doneHabits + '/' + totalHabitSlots + ' habitos cumplidos';
+  if (hl) hl.textContent = compPct >= 80 ? 'Excellent week' : compPct >= 50 ? 'Good progress' : 'Week in progress';
+  if (sl) sl.textContent = doneGoals + ' de ' + totalGoals + ' metas completed · ' + doneHabits + '/' + totalHabitSlots + ' habits completed';
 
   // Stats
   const completedTasks = state.tasks.filter(t => {
-    if (t.status !== 'completada') return false;
+    if (t.status !== 'completed') return false;
     return true; // simplified - show all completed
   });
   const statsEl = document.getElementById('review-stats');
   if (statsEl) statsEl.innerHTML =
     '<div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center;">' +
       '<div style="font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--accent);">' + doneGoals + '/' + totalGoals + '</div>' +
-      '<div style="font-size:11px;color:var(--text3);margin-top:2px;">Metas</div>' +
+      '<div style="font-size:11px;color:var(--text3);margin-top:2px;">Goals</div>' +
     '</div>' +
     '<div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center;">' +
       '<div style="font-family:var(--font-d);font-size:20px;font-weight:800;color:#3b82f6;">' + doneHabits + '/' + totalHabitSlots + '</div>' +
-      '<div style="font-size:11px;color:var(--text3);margin-top:2px;">Habitos</div>' +
+      '<div style="font-size:11px;color:var(--text3);margin-top:2px;">Habits</div>' +
     '</div>' +
     '<div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center;">' +
       '<div style="font-family:var(--font-d);font-size:20px;font-weight:800;color:#a78bfa;">' + compPct + '%</div>' +
-      '<div style="font-size:11px;color:var(--text3);margin-top:2px;">Cumplimiento</div>' +
+      '<div style="font-size:11px;color:var(--text3);margin-top:2px;">Achievement</div>' +
     '</div>';
 
   // Goals review
   const rg = document.getElementById('review-goals-list');
   if (rg) {
     if (!wd.goals.length) {
-      rg.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:1rem 0;">No hay metas planeadas para esta semana.</div>';
+      rg.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:1rem 0;">No goals planned for this week.</div>';
     } else {
       rg.innerHTML = wd.goals.map(g => {
         const obj = g.objId ? state.objectives.find(o => o.id === g.objId) : null;
@@ -1299,7 +1303,7 @@ function renderWeekReview() {
   // Habits grid
   const hg = document.getElementById('review-habits-grid');
   if (hg) {
-    const dayLabels = ['L','M','X','J','V','S','D'];
+    const dayLabels = ['M','T','W','T','F','S','S'];
     let gridHtml = '<div style="display:grid;grid-template-columns:120px repeat(7,1fr);gap:4px;align-items:center;">';
     // Header row
     gridHtml += '<div></div>';
@@ -1322,9 +1326,9 @@ function renderWeekReview() {
   // Tasks
   const rt = document.getElementById('review-tasks');
   if (rt) {
-    const completedList = state.tasks.filter(t => t.status === 'completada');
+    const completedList = state.tasks.filter(t => t.status === 'completed');
     if (!completedList.length) {
-      rt.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:1rem 0;">No hay tareas completadas aun.</div>';
+      rt.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:1rem 0;">No hay tareas completed aun.</div>';
     } else {
       rt.innerHTML = completedList.slice(0,8).map(t =>
         '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;">' +
@@ -1342,10 +1346,10 @@ function renderWeekReview() {
 }
 // ==================== HABITS ====================
 const HABITS = [
-  {id:'ingles',    label:'Ingles - 1 leccion',  color:'#3b82f6', emoji:'📚'},
-  {id:'leer',      label:'Leer 20 minutos',      color:'#f59e0b', emoji:'📖'},
-  {id:'ejercicio', label:'Ejercicio',             color:'#00e5a0', emoji:'🏃'},
-  {id:'espiritual',label:'Actividad espiritual',  color:'#a78bfa', emoji:'✨'},
+  {id:'ingles',    label:'English - 1 lesson',  color:'#3b82f6', emoji:'📚'},
+  {id:'leer',      label:'Read 20 minutes',      color:'#f59e0b', emoji:'📖'},
+  {id:'ejercicio', label:'Exercise',             color:'#00e5a0', emoji:'🏃'},
+  {id:'espiritual',label:'Spiritual activity',  color:'#a78bfa', emoji:'✨'},
 ];
 
 function habitKey(date) {
@@ -1446,8 +1450,8 @@ function renderHabits() {
   // Today label
   const todayEl = document.getElementById('habit-today-label');
   if (todayEl) todayEl.textContent = isCurrentMonth
-    ? 'Hoy - ' + now.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'})
-    : 'Mes pasado - marcar dias manualmente';
+    ? 'Today - ' + now.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'})
+    : 'Mes pasado - marcar days manualmente';
 
   // ── SVG circular tracker ─────────────────────────────────────────────────
   const cx = 300, cy = 300, innerR = 80, ringW = 42, gap = 6;
@@ -1514,7 +1518,7 @@ function renderHabits() {
   const todayData = state.habits[todayDk] || {};
   const doneTodayCount = isCurrentMonth ? HABITS.filter(h=>todayData[h.id]).length : '-';
   const centerTop = isCurrentMonth ? doneTodayCount+'/4' : getMonthCompletionRate(year,month)+'%';
-  const centerBot = isCurrentMonth ? 'HOY' : monthName.slice(0,3).toUpperCase();
+  const centerBot = isCurrentMonth ? 'TODAY' : monthName.slice(0,3).toUpperCase();
   svg += '<text x="'+cx+'" y="'+(cy-14)+'" text-anchor="middle" font-size="26" font-weight="800" font-family="sans-serif" fill="var(--text)">'+centerTop+'</text>';
   svg += '<text x="'+cx+'" y="'+(cy+12)+'" text-anchor="middle" font-size="10" font-family="sans-serif" fill="var(--text3)">'+centerBot+'</text>';
 
@@ -1539,7 +1543,7 @@ function renderHabits() {
     return '<div style="margin-bottom:10px;">'+
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">'+
         '<span style="font-size:12px;color:var(--text2);">'+h.emoji+' '+h.label+'</span>'+
-        '<span style="font-family:var(--font-d);font-size:13px;font-weight:700;color:'+h.color+';">'+s+' dias</span>'+
+        '<span style="font-family:var(--font-d);font-size:13px;font-weight:700;color:'+h.color+';">'+s+' days</span>'+
       '</div>'+
       '<div style="height:4px;background:var(--bg3);border-radius:2px;">'+
         '<div style="height:4px;background:'+h.color+';border-radius:2px;width:'+Math.min(100,(s/30)*100)+'%;transition:width 0.4s;"></div>'+
@@ -1581,7 +1585,7 @@ function clickHabitSegment(dateKey, habitId) {
 
 function renderHabitYear(year) {
   const titleEl = document.getElementById('habit-year-title');
-  if (titleEl) titleEl.textContent = 'Resumen anual ' + year;
+  if (titleEl) titleEl.textContent = 'Annual summary ' + year;
 
   // Annual bars per habit
   const annualBarsEl = document.getElementById('habit-annual-bars');
@@ -1615,7 +1619,7 @@ function renderHabitYear(year) {
   const gridEl = document.getElementById('habit-year-grid');
   if (!gridEl) return;
   const now = new Date();
-  const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   gridEl.innerHTML = monthNames.map((mn, m) => {
     const isFuture = year > now.getFullYear() || (year === now.getFullYear() && m > now.getMonth());
     const isCurrent = year === now.getFullYear() && m === now.getMonth();
