@@ -734,6 +734,7 @@
 let state = { objectives:[], tasks:[], team:[], leads:[], habits:{}, weeks:{}, _weekOffset:0, _weekSubTab:'plan', _habitMonthOffset:0, _editObjId:null, _editKrId:null, _editKrObjId:null, _editTaskId:null, _editLeadId:null, _currentQ:'all', _taskFilters:{status:'',priority:'',search:''}, _crmFilters:{proyecto:'',search:''} };
 let SHEET_URL = '';
 let autoSyncTimer = null;
+let _pushTimer = null; // debounce para auto-push
 
 // ==================== SEED DATA ====================
 const SEED = {
@@ -829,6 +830,15 @@ const SEED = {
 // ==================== STORAGE ====================
 function save() {
   try { localStorage.setItem('bilib2026_data', JSON.stringify({ objectives:state.objectives, tasks:state.tasks, team:state.team, leads:state.leads, habits:state.habits, weeks:state.weeks })); } catch(e){}
+  schedulePush(); // Auto-push a Sheets 2 segundos después del último cambio
+}
+
+// Debounce: espera 2 seg después del último cambio antes de enviar a Sheets
+function schedulePush() {
+  if (!SHEET_URL) return;
+  if (_pushTimer) clearTimeout(_pushTimer);
+  setSyncStatus('syncing', 'Guardando...');
+  _pushTimer = setTimeout(function() { pushToSheets(); }, 2000);
 }
 function loadLocal() {
   try {
@@ -850,7 +860,11 @@ function loadLocal() {
       save();
     }
     SHEET_URL = localStorage.getItem('bilib2026_url')||'';
-    if (SHEET_URL) document.getElementById('sheets-url').value = SHEET_URL;
+    if (SHEET_URL) {
+      document.getElementById('sheets-url').value = SHEET_URL;
+      // Si hay URL guardada, arrancar auto-pull y traer los datos frescos de Sheets
+      setTimeout(function() { startAutoSync(); }, 500);
+    }
   } catch(e){}
 }
 
@@ -862,30 +876,59 @@ function setSyncStatus(st, label) {
 
 // ==================== GOOGLE SHEETS API ====================
 async function syncFromSheets() {
-  if (!SHEET_URL) { alert('First configure the Web App URL en la pestaña Sheets'); return; }
-  setSyncStatus('syncing', 'Syncing...');
+  if (!SHEET_URL) return;
+  setSyncStatus('syncing', 'Sincronizando...');
   try {
     const res = await fetch(SHEET_URL + '?action=getData');
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    state.objectives = data.objectives||[]; state.tasks = data.tasks||[]; state.team = data.team||[]; state.leads = data.leads||[];
-    save(); setSyncStatus('ok','Synced · '+new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})); renderCurrentView();
-  } catch(err) { setSyncStatus('error','Connection error'); console.error(err); }
+    const resp = await res.json();
+    if (!resp.ok) throw new Error(resp.error || 'Error desconocido');
+
+    // Si hay datos en Sheets, aplicarlos (Sheets es la fuente de verdad)
+    if (resp.state) {
+      const s = resp.state;
+      if (s.objectives && s.objectives.length) state.objectives = s.objectives;
+      if (s.tasks      && s.tasks.length)      state.tasks      = s.tasks;
+      if (s.team       && s.team.length)        state.team       = s.team;
+      if (s.leads      && s.leads.length)       state.leads      = s.leads;
+      if (s.habits)                             state.habits     = s.habits;
+      if (s.weeks)                              state.weeks      = s.weeks;
+      // Guardar en localStorage sin disparar otro push
+      try { localStorage.setItem('bilib2026_data', JSON.stringify({ objectives:state.objectives, tasks:state.tasks, team:state.team, leads:state.leads, habits:state.habits, weeks:state.weeks })); } catch(e){}
+      renderCurrentView();
+    }
+
+    const hora = new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+    setSyncStatus('ok','Sync ' + hora);
+  } catch(err) {
+    setSyncStatus('error','Error de conexión');
+    console.error('syncFromSheets error:', err);
+  }
 }
+
 async function pushToSheets() {
-  if (!SHEET_URL) { alert('First configure the Web App URL'); return; }
-  setSyncStatus('syncing','Exporting...');
+  if (!SHEET_URL) return;
+  setSyncStatus('syncing','Guardando en Sheets...');
   try {
-    // Usamos GET en lugar de POST para evitar el error de CORS preflight
-    // Google Apps Script no responde OPTIONS, así que POST con JSON falla desde el browser
-    const payload = { objectives:state.objectives, tasks:state.tasks, team:state.team, leads:state.leads };
-    const url = SHEET_URL + '?action=replaceAll&data=' + encodeURIComponent(JSON.stringify(payload));
-    const res = await fetch(url);
-    const data = await res.json();
-    if (data.ok) { setSyncStatus('ok','Exported ✓'); }
-    else throw new Error(data.error || JSON.stringify(data));
-  } catch(e) { setSyncStatus('error','Error: '+e.message); console.error('pushToSheets error:', e); }
+    // POST con Content-Type: text/plain evita el CORS preflight
+    // (application/json sí dispara preflight, text/plain no)
+    const payload = { objectives:state.objectives, tasks:state.tasks, team:state.team, leads:state.leads, habits:state.habits, weeks:state.weeks };
+    const res = await fetch(SHEET_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'saveState', data: payload })
+    });
+    const resp = await res.json();
+    if (resp.ok) {
+      const hora = new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+      setSyncStatus('ok','Guardado ' + hora);
+    } else {
+      throw new Error(resp.error || 'Error al guardar');
+    }
+  } catch(e) {
+    setSyncStatus('error','Error: '+e.message);
+    console.error('pushToSheets error:', e);
+  }
 }
 async function testConnection() {
   if (!SHEET_URL) { document.getElementById('connection-status').innerHTML='<span style="color:var(--red);">Enter the URL first.</span>'; return; }
@@ -899,10 +942,21 @@ async function testConnection() {
 function saveSheetURL() {
   SHEET_URL = document.getElementById('sheets-url').value.trim();
   localStorage.setItem('bilib2026_url', SHEET_URL);
-  document.getElementById('connection-status').innerHTML='<span style="color:var(--accent);">URL saved. Haz clic en Importar para cargar datos.</span>';
+  document.getElementById('connection-status').innerHTML='<span style="color:var(--accent);">✓ URL guardada — iniciando sync automático...</span>';
+  startAutoSync(); // Arrancar sync automático al conectar
 }
-function startAutoSync() { if (autoSyncTimer) clearInterval(autoSyncTimer); autoSyncTimer = setInterval(syncFromSheets,30000); syncFromSheets(); setSyncStatus('ok','Auto-sync active'); }
-function stopAutoSync()  { if (autoSyncTimer) { clearInterval(autoSyncTimer); autoSyncTimer=null; } setSyncStatus('','Auto-sync stopped'); }
+function startAutoSync() {
+  if (autoSyncTimer) clearInterval(autoSyncTimer);
+  // Pull desde Sheets cada 30 segundos (para ver cambios del otro usuario)
+  autoSyncTimer = setInterval(syncFromSheets, 30000);
+  // Primera sync inmediata
+  syncFromSheets();
+  setSyncStatus('syncing','Conectando...');
+}
+function stopAutoSync() {
+  if (autoSyncTimer) { clearInterval(autoSyncTimer); autoSyncTimer=null; }
+  setSyncStatus('','Sync pausado');
+}
 
 // ==================== UTILS ====================
 function uid() { return Date.now().toString(36)+Math.random().toString(36).slice(2); }
