@@ -305,6 +305,29 @@
           <div id="dash-habits-today"></div>
         </div>
       </div>
+
+      <!-- Daily Check-in -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.5rem;margin-top:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div id="checkin-greeting" style="font-family:var(--font-d);font-size:15px;font-weight:800;"></div>
+            <div id="checkin-subtitle" style="font-size:12px;color:var(--text3);margin-top:2px;"></div>
+          </div>
+          <div id="checkin-badge" style="font-size:11px;padding:4px 12px;border-radius:20px;background:var(--bg3);color:var(--text2);"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <!-- Sprint goals -->
+          <div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);font-weight:600;margin-bottom:10px;">🏃 Sprint goals this week</div>
+            <div id="checkin-goals"></div>
+          </div>
+          <!-- Tasks focus -->
+          <div>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text3);font-weight:600;margin-bottom:10px;">⚡ Focus tasks</div>
+            <div id="checkin-tasks"></div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- OKRs -->
@@ -1051,6 +1074,7 @@ function renderDashboard() {
   const dashTodayEl = document.getElementById('dash-today-label');
   if (dashTodayEl) dashTodayEl.textContent = new Date().toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'});
   renderDashHabits();
+  renderDashCheckin();
   document.getElementById('dash-tasks').innerHTML=recent.length?'<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="text-align:left;font-size:11px;color:var(--text3);text-transform:uppercase;padding:0 12px 8px;font-weight:500;">Task</th><th style="text-align:left;font-size:11px;color:var(--text3);text-transform:uppercase;padding:0 12px 8px;font-weight:500;">Assignee</th><th style="text-align:left;font-size:11px;color:var(--text3);text-transform:uppercase;padding:0 12px 8px;font-weight:500;">Status</th></tr></thead><tbody>'+recent.map(t=>'<tr><td style="padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border);">'+t.name+'</td><td style="padding:10px 12px;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border);">'+( t.assignee||'—')+'</td><td style="padding:10px 12px;border-bottom:1px solid var(--border);"><span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 8px;border-radius:20px;background:'+taskStatusColor(t.status)+'18;color:'+taskStatusColor(t.status)+';"><span style="width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block;"></span>'+taskStatusLabel(t.status)+'</span></td></tr>').join('')+'</tbody></table>':'<p style="color:var(--text3);font-size:13px;padding:12px;">No tasks.</p>';
 }
 
@@ -1091,6 +1115,111 @@ function renderDashHabits() {
     html += '</div>';
   });
   el.innerHTML = html;
+}
+
+function renderDashCheckin() {
+  const hour = new Date().getHours();
+  const isMorning = hour < 13;
+  const isAfternoon = hour >= 13 && hour < 20;
+
+  const greetEl = document.getElementById('checkin-greeting');
+  const subEl   = document.getElementById('checkin-subtitle');
+  const badgeEl = document.getElementById('checkin-badge');
+
+  if (greetEl) {
+    if (isMorning) {
+      greetEl.textContent = '☀️ Buenos días — Daily Check-in';
+      if (subEl) subEl.textContent = 'Define tu foco para hoy · ¿qué mueve el sprint esta mañana?';
+    } else if (isAfternoon) {
+      greetEl.textContent = '🌆 Cierre del día — Daily Check-in';
+      if (subEl) subEl.textContent = 'Marca lo que completaste · revisa qué queda pendiente';
+    } else {
+      greetEl.textContent = '🌙 Revisión nocturna — Daily Check-in';
+      if (subEl) subEl.textContent = 'Día cerrado · prepara el sprint de mañana';
+    }
+  }
+
+  // Sprint goals for current week
+  const wk = state.weeks[getWeekKey(0)] || { goals: [] };
+  const goalsEl = document.getElementById('checkin-goals');
+  if (goalsEl) {
+    const done  = wk.goals.filter(g => g.done).length;
+    const total = wk.goals.length;
+    if (badgeEl) badgeEl.textContent = 'Sprint: ' + done + '/' + total + ' goals';
+    if (!total) {
+      goalsEl.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:12px 0;">Sin goals esta semana — ve a Weekly Board → Plan y agrega tus compromisos del sprint.</div>';
+    } else {
+      goalsEl.innerHTML = wk.goals.map(g => {
+        const obj = g.objId ? state.objectives.find(o => o.id === g.objId) : null;
+        return '<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="toggleCheckinGoal(\'' + g.id + '\')">' +
+          '<div style="width:18px;height:18px;border-radius:5px;border:2px solid ' + (g.done ? 'var(--accent)' : 'var(--border2)') + ';background:' + (g.done ? 'var(--accent)' : 'transparent') + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all 0.2s;">' +
+            (g.done ? '<span style="color:#000;font-size:11px;font-weight:900;">✓</span>' : '') +
+          '</div>' +
+          '<div style="flex:1;">' +
+            '<div style="font-size:13px;' + (g.done ? 'text-decoration:line-through;color:var(--text3);' : 'color:var(--text);') + '">' + g.text + '</div>' +
+            (obj ? '<div style="font-size:10px;color:var(--text3);margin-top:2px;">→ ' + obj.name.slice(0, 38) + '</div>' : '') +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+  }
+
+  // Focus tasks: today's due date first, then pending by priority
+  const tasksEl = document.getElementById('checkin-tasks');
+  if (tasksEl) {
+    const now = new Date();
+    const todayStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+    const priOrder = { high: 0, medium: 1, low: 2 };
+
+    // Tasks due today or in-progress, not completed
+    const todayTasks = state.tasks.filter(t => t.status !== 'completed' && t.due === todayStr);
+    // Remaining pending tasks sorted by priority
+    const pendingTasks = state.tasks
+      .filter(t => t.status !== 'completed' && t.due !== todayStr && (t.status === 'pending' || t.status === 'in-progress'))
+      .sort((a, b) => (priOrder[a.priority] ?? 9) - (priOrder[b.priority] ?? 9));
+
+    const focusList = [...todayTasks, ...pendingTasks].slice(0, 6);
+
+    if (!focusList.length) {
+      tasksEl.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:12px 0;">Sin tasks pendientes — agrega tasks en la sección Tasks o en un Objetivo.</div>';
+    } else {
+      const priBg = { high: '#ef444422', medium: '#f59e0b22', low: 'var(--bg3)' };
+      const priCol = { high: '#ef4444', medium: '#f59e0b', low: 'var(--text3)' };
+      tasksEl.innerHTML = focusList.map(t => {
+        const isToday = t.due === todayStr;
+        const isInProgress = t.status === 'in-progress';
+        return '<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="quickCompleteTask(\'' + t.id + '\')" title="Click para marcar completed">' +
+          '<div style="width:18px;height:18px;border-radius:50%;border:2px solid ' + (isInProgress ? '#3b82f6' : 'var(--border2)') + ';background:' + (isInProgress ? '#3b82f622' : 'transparent') + ';flex-shrink:0;margin-top:1px;"></div>' +
+          '<div style="flex:1;">' +
+            '<div style="font-size:12px;color:var(--text);line-height:1.4;">' + t.name + '</div>' +
+            '<div style="display:flex;align-items:center;gap:6px;margin-top:3px;">' +
+              (isToday ? '<span style="font-size:9px;background:#ef444422;color:#ef4444;border-radius:10px;padding:1px 6px;">📅 Hoy</span>' : '') +
+              (isInProgress ? '<span style="font-size:9px;background:#3b82f622;color:#3b82f6;border-radius:10px;padding:1px 6px;">En curso</span>' : '') +
+              '<span style="font-size:9px;background:' + (priBg[t.priority]||'var(--bg3)') + ';color:' + (priCol[t.priority]||'var(--text3)') + ';border-radius:10px;padding:1px 6px;">' + (t.priority||'low') + '</span>' +
+              (t.assignee ? '<span style="font-size:9px;color:var(--text3);">· ' + t.assignee + '</span>' : '') +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+  }
+}
+
+function toggleCheckinGoal(id) {
+  const wd = state.weeks[getWeekKey(0)];
+  if (!wd) return;
+  const g = wd.goals.find(x => x.id === id);
+  if (g) { g.done = !g.done; save(); renderDashboard(); }
+}
+
+function quickCompleteTask(id) {
+  const t = state.tasks.find(x => x.id === id);
+  if (!t) return;
+  if (t.status === 'completed') return;
+  t.status = t.status === 'in-progress' ? 'completed' : 'in-progress';
+  save();
+  renderDashboard();
+  renderTasks && renderTasks();
 }
 
 // ==================== OKRs ====================
@@ -1953,434 +2082,6 @@ function renderHabitYear(year) {
 
   const gridEl = document.getElementById('habit-year-grid');
   if (!gridEl) return;
-  const now = new Date();
-  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  gridEl.innerHTML = monthNames.map((mn, m) => {
-    const isFuture = year > now.getFullYear() || (year === now.getFullYear() && m > now.getMonth());
-    const isCurrent = year === now.getFullYear() && m === now.getMonth();
-    const rate = isFuture ? null : getMonthCompletionRate(year, m);
-    const rateDisplay = isFuture ? '—' : (rate + '%');
-    const color = rate === null ? 'var(--text3)' : rate >= 80 ? '#00e5a0' : rate >= 50 ? '#f59e0b' : '#ef4444';
-    const offset = (m - now.getMonth()) + (year - now.getFullYear()) * 12;
-    const isViewing = offset === state._habitMonthOffset;
-
-    return '<div class="month-mini" onclick="jumpToHabitMonth('+offset+')" style="border-color:'+(isViewing?'var(--accent)':isCurrent?'var(--border2)':'var(--border)')+';">'+
-      '<div class="month-mini-title" style="color:'+(isCurrent?'var(--text)':'var(--text2)')+';">'+mn+(isCurrent?' •':'')+'</div>'+
-      HABITS.map(h => {
-        const hr = isFuture ? 0 : getHabitMonthRate(h.id, year, m);
-        return '<div class="month-mini-bar"><div class="month-mini-fill" style="width:'+hr+'%;background:'+h.color+';"></div></div>';
-      }).join('')+
-      '<div class="month-mini-pct" style="color:'+color+';margin-top:4px;">'+rateDisplay+'</div>'+
-    '</div>';
-  }).join('');
-}
-
-function jumpToHabitMonth(offset) {
-  state._habitMonthOffset = offset;
-  renderHabits();
-}
-
-// ==================== INIT ====================
-window.addEventListener('DOMContentLoaded', function() {
-  loadLocal();
-  renderDashboard();
-  renderOKRs();
-  renderTasks();
-  renderTeam();
-  renderTimeline();
-  renderCRM();
-  renderHabits();
-  renderWeekly();
-});
-</script>
-</body>
-</html>
-
-
-  // ── SVG circular tracker ─────────────────────────────────────────────────
-  const cx = 300, cy = 300, innerR = 80, ringW = 42, gap = 6;
-  const startAngle = -90, segGap = 1.2;
-
-  function polarXY(r, angleDeg) {
-    const rad = (angleDeg - 90) * Math.PI / 180;
-    return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
-  }
-  function arcPath(r1, r2, a1, a2) {
-    const [x1,y1] = polarXY(r2,a1), [x2,y2] = polarXY(r2,a2);
-    const [x3,y3] = polarXY(r1,a2), [x4,y4] = polarXY(r1,a1);
-    const lg = (a2-a1)>180?1:0;
-    return 'M'+x1+','+y1+' A'+r2+','+r2+',0,'+lg+',1,'+x2+','+y2+' L'+x3+','+y3+' A'+r1+','+r1+',0,'+lg+',0,'+x4+','+y4+' Z';
-  }
-
-  const degPerDay = 360 / daysInMonth;
-  let svg = '';
-
-  // BG rings
-  for (let h = 0; h < HABITS.length; h++) {
-    const r1 = innerR + h*(ringW+gap), r2 = r1+ringW;
-    svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+((r1+r2)/2)+'" fill="none" stroke="'+HABITS[h].color+'18" stroke-width="'+ringW+'"/>';
-  }
-
-  // Segments
-  for (let day = 1; day <= daysInMonth; day++) {
-    const a1 = startAngle + (day-1)*degPerDay + segGap/2;
-    const a2 = startAngle + day*degPerDay - segGap/2;
-    const dk = year+'-'+String(month+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
-    const dayData = userHabits()[dk] || {};
-    const isToday = isCurrentMonth && day === now.getDate();
-    const isFuture = isCurrentMonth && day > now.getDate();
-
-    for (let h = 0; h < HABITS.length; h++) {
-      const r1 = innerR + h*(ringW+gap), r2 = r1+ringW;
-      const done = dayData[HABITS[h].id];
-      const color = isFuture ? HABITS[h].color+'10' : done ? HABITS[h].color : HABITS[h].color+'25';
-      svg += '<path d="'+arcPath(r1+2,r2-2,a1,a2)+'" fill="'+color+'" stroke="var(--bg)" stroke-width="1"';
-      if (!isFuture) {
-        svg += ' style="cursor:pointer;" onclick="clickHabitSegment(\''+dk+'\',\''+HABITS[h].id+'\')"';
-      }
-      svg += '/>';
-    }
-
-    // Day label
-    const labelR = innerR + HABITS.length*(ringW+gap) + 14;
-    const midAngle = startAngle + (day-0.5)*degPerDay;
-    const [lx,ly] = polarXY(labelR, midAngle);
-    const rot = midAngle + 90;
-    const fw  = isToday ? '800' : '400';
-    const fc  = isToday ? '#fff' : isFuture ? 'var(--border2)' : 'var(--text3)';
-    svg += '<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" text-anchor="middle" dominant-baseline="middle" font-size="9" font-family="sans-serif" transform="rotate('+rot.toFixed(1)+','+lx.toFixed(1)+','+ly.toFixed(1)+')" fill="'+fc+'" font-weight="'+fw+'">'+day+'</text>';
-
-    if (isToday) {
-      const r1=innerR-4, r2=innerR+HABITS.length*(ringW+gap)+4;
-      const pa=arcPath(r1,r2,a1-0.5,a2+0.5);
-      svg = '<path d="'+pa+'" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>' + svg;
-    }
-  }
-
-  // Center
-  const todayDk = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
-  const todayData = userHabits()[todayDk] || {};
-  const doneTodayCount = isCurrentMonth ? HABITS.filter(h=>todayData[h.id]).length : '-';
-  const centerTop = isCurrentMonth ? doneTodayCount+'/4' : getMonthCompletionRate(year,month)+'%';
-  const centerBot = isCurrentMonth ? 'TODAY' : monthName.slice(0,3).toUpperCase();
-  svg += '<text x="'+cx+'" y="'+(cy-14)+'" text-anchor="middle" font-size="26" font-weight="800" font-family="sans-serif" fill="var(--text)">'+centerTop+'</text>';
-  svg += '<text x="'+cx+'" y="'+(cy+12)+'" text-anchor="middle" font-size="10" font-family="sans-serif" fill="var(--text3)">'+centerBot+'</text>';
-
-  document.getElementById('habit-svg').innerHTML = svg;
-
-  // ── Daily check-in ────────────────────────────────────────────────────────
-  const checkinData = isCurrentMonth ? (userHabits()[todayDk]||{}) : {};
-  document.getElementById('habit-checkin-rows').innerHTML = HABITS.map(h => {
-    const done = checkinData[h.id];
-    const opacity = isCurrentMonth ? '1' : '0.4';
-    return '<div class="habit-row" style="opacity:'+opacity+';">' +
-      '<div><div class="habit-label"><span class="habit-dot" style="background:'+h.color+';"></span><span>'+h.emoji+' '+h.label+'</span></div></div>' +
-      '<button class="habit-toggle '+(done?'done':'')+'" '+(isCurrentMonth ? 'onclick="toggleHabit(\''+h.id+'\')"' : 'disabled')+
-        ' style="'+(done?'background:'+h.color+';border-color:'+h.color+';color:#000;':'')+'">'+
-        (done?'&#10003;':'')+
-      '</button></div>';
-  }).join('');
-
-  // ── Streaks ───────────────────────────────────────────────────────────────
-  document.getElementById('habit-streaks').innerHTML = HABITS.map(h => {
-    const s = getStreak(h.id);
-    return '<div style="margin-bottom:10px;">'+
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">'+
-        '<span style="font-size:12px;color:var(--text2);">'+h.emoji+' '+h.label+'</span>'+
-        '<span style="font-family:var(--font-d);font-size:13px;font-weight:700;color:'+h.color+';">'+s+' days</span>'+
-      '</div>'+
-      '<div style="height:4px;background:var(--bg3);border-radius:2px;">'+
-        '<div style="height:4px;background:'+h.color+';border-radius:2px;width:'+Math.min(100,(s/30)*100)+'%;transition:width 0.4s;"></div>'+
-      '</div></div>';
-  }).join('');
-
-  // ── Monthly summary ───────────────────────────────────────────────────────
-  const mSumEl = document.getElementById('habit-month-summary');
-  if (mSumEl) {
-    mSumEl.innerHTML = HABITS.map(h => {
-      const rate = getHabitMonthRate(h.id, year, month);
-      return '<div style="margin-bottom:8px;">'+
-        '<div style="display:flex;justify-content:space-between;margin-bottom:3px;">'+
-          '<span style="font-size:12px;color:var(--text2);">'+h.emoji+' '+h.label+'</span>'+
-          '<span style="font-family:var(--font-d);font-size:12px;font-weight:700;color:'+h.color+';">'+rate+'%</span>'+
-        '</div>'+
-        '<div style="height:4px;background:var(--bg3);border-radius:2px;">'+
-          '<div style="height:4px;background:'+h.color+';border-radius:2px;width:'+rate+'%;"></div>'+
-        '</div></div>';
-    }).join('');
-  }
-
-  // ── Legend ────────────────────────────────────────────────────────────────
-  document.getElementById('habit-legend').innerHTML = HABITS.map((h,i) =>
-    '<div class="habit-legend-item"><div style="width:28px;height:10px;border-radius:2px;background:'+h.color+';flex-shrink:0;"></div>'+
-    '<span>Anillo '+(i+1)+' — '+h.label+'</span></div>'
-  ).join('');
-
-  // ── Year view ─────────────────────────────────────────────────────────────
-  renderHabitYear(year);
-}
-
-function clickHabitSegment(dateKey, habitId) {
-  const uh = userHabits();
-  if (!uh[dateKey]) uh[dateKey] = {};
-  uh[dateKey][habitId] = !uh[dateKey][habitId];
-  save();
-  renderHabits();
-}
-
-function renderHabitYear(year) {
-  const titleEl = document.getElementById('habit-year-title');
-  if (titleEl) titleEl.textContent = 'Annual summary ' + year;
-
-  // Annual bars per habit
-  const annualBarsEl = document.getElementById('habit-annual-bars');
-  if (annualBarsEl) {
-    annualBarsEl.innerHTML = HABITS.map(h => {
-      let totalDone = 0, totalDays = 0;
-      for (let m = 0; m < 12; m++) {
-        const now = new Date();
-        if (year > now.getFullYear() || (year === now.getFullYear() && m > now.getMonth())) break;
-        const dim = new Date(year, m+1, 0).getDate();
-        const isCurrentMonth = year === now.getFullYear() && m === now.getMonth();
-        const days = isCurrentMonth ? now.getDate() : dim;
-        for (let d = 1; d <= days; d++) {
-          const k = year+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-          totalDays++;
-          const uhY = userHabits(); if (uhY[k] && uhY[k][h.id]) totalDone++;
-        }
-      }
-      const rate = totalDays ? Math.round(totalDone/totalDays*100) : 0;
-      return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">'+
-        '<span style="font-size:12px;color:var(--text2);width:160px;flex-shrink:0;">'+h.emoji+' '+h.label+'</span>'+
-        '<div style="flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;">'+
-          '<div style="height:6px;background:'+h.color+';border-radius:3px;width:'+rate+'%;transition:width 0.5s;"></div>'+
-        '</div>'+
-        '<span style="font-family:var(--font-d);font-size:12px;font-weight:700;color:'+h.color+';width:36px;text-align:right;">'+rate+'%</span>'+
-      '</div>';
-    }).join('');
-  }
-
-  // Month mini cards
-  const gridEl = document.getElementById('habit-year-grid');
-  if (!gridEl) return;
-  const now = new Date();
-  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  gridEl.innerHTML = monthNames.map((mn, m) => {
-    const isFuture = year > now.getFullYear() || (year === now.getFullYear() && m > now.getMonth());
-    const isCurrent = year === now.getFullYear() && m === now.getMonth();
-    const rate = isFuture ? null : getMonthCompletionRate(year, m);
-    const rateDisplay = isFuture ? '—' : (rate + '%');
-    const color = rate === null ? 'var(--text3)' : rate >= 80 ? '#00e5a0' : rate >= 50 ? '#f59e0b' : '#ef4444';
-    const offset = (m - now.getMonth()) + (year - now.getFullYear()) * 12;
-    const isViewing = offset === state._habitMonthOffset;
-
-    return '<div class="month-mini" onclick="jumpToHabitMonth('+offset+')" style="border-color:'+(isViewing?'var(--accent)':isCurrent?'var(--border2)':'var(--border)')+';">'+
-      '<div class="month-mini-title" style="color:'+(isCurrent?'var(--text)':'var(--text2)')+';">'+mn+(isCurrent?' •':'')+'</div>'+
-      HABITS.map(h => {
-        const hr = isFuture ? 0 : getHabitMonthRate(h.id, year, m);
-        return '<div class="month-mini-bar"><div class="month-mini-fill" style="width:'+hr+'%;background:'+h.color+';"></div></div>';
-      }).join('')+
-      '<div class="month-mini-pct" style="color:'+color+';margin-top:4px;">'+rateDisplay+'</div>'+
-    '</div>';
-  }).join('');
-}
-
-function jumpToHabitMonth(offset) {
-  state._habitMonthOffset = offset;
-  renderHabits();
-}
-
-// ==================== INIT ====================
-window.addEventListener('DOMContentLoaded', function() {
-  loadLocal();
-  renderDashboard();
-  renderOKRs();
-  renderTasks();
-  renderTeam();
-  renderTimeline();
-  renderCRM();
-  renderHabits();
-  renderWeekly();
-});
-</script>
-</body>
-</html> : 0;
-}
-
-function renderHabits() {
-  const now = new Date();
-  const viewDate = new Date(now.getFullYear(), now.getMonth() + state._habitMonthOffset, 1);
-  const year  = viewDate.getFullYear();
-  const month = viewDate.getMonth();
-  const daysInMonth = new Date(year, month+1, 0).getDate();
-  const isCurrentMonth = year === now.getFullYear() && month === now.getMonth();
-  const monthName = viewDate.toLocaleDateString('es-ES', {month:'long', year:'numeric'});
-
-  document.getElementById('habit-month-label').textContent =
-    monthName.charAt(0).toUpperCase() + monthName.slice(1);
-
-  const nextBtn = document.getElementById('habit-next-btn');
-  if (nextBtn) nextBtn.style.opacity = state._habitMonthOffset >= 0 ? '0.3' : '1';
-
-  const todayEl = document.getElementById('habit-today-label');
-  if (todayEl) todayEl.textContent = isCurrentMonth
-    ? 'Today - ' + now.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'})
-    : 'Mes pasado - marcar days manualmente';
-
-  const cx = 300, cy = 300, innerR = 80, ringW = 42, gap = 6;
-  const startAngle = -90, segGap = 1.2;
-
-  function polarXY(r, angleDeg) {
-    const rad = (angleDeg - 90) * Math.PI / 180;
-    return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
-  }
-  function arcPath(r1, r2, a1, a2) {
-    const [x1,y1] = polarXY(r2,a1), [x2,y2] = polarXY(r2,a2);
-    const [x3,y3] = polarXY(r1,a2), [x4,y4] = polarXY(r1,a1);
-    const lg = (a2-a1)>180?1:0;
-    return 'M'+x1+','+y1+' A'+r2+','+r2+',0,'+lg+',1,'+x2+','+y2+' L'+x3+','+y3+' A'+r1+','+r1+',0,'+lg+',0,'+x4+','+y4+' Z';
-  }
-
-  const degPerDay = 360 / daysInMonth;
-  let svg = '';
-
-  for (let h = 0; h < HABITS.length; h++) {
-    const r1 = innerR + h*(ringW+gap), r2 = r1+ringW;
-    svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+((r1+r2)/2)+'" fill="none" stroke="'+HABITS[h].color+'18" stroke-width="'+ringW+'"/>';
-  }
-
-  for (let day = 1; day <= daysInMonth; day++) {
-    const a1 = startAngle + (day-1)*degPerDay + segGap/2;
-    const a2 = startAngle + day*degPerDay - segGap/2;
-    const dk = year+'-'+String(month+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
-    const dayData = userHabits()[dk] || {};
-    const isToday = isCurrentMonth && day === now.getDate();
-    const isFuture = isCurrentMonth && day > now.getDate();
-
-    for (let h = 0; h < HABITS.length; h++) {
-      const r1 = innerR + h*(ringW+gap), r2 = r1+ringW;
-      const done = dayData[HABITS[h].id];
-      const color = isFuture ? HABITS[h].color+'10' : done ? HABITS[h].color : HABITS[h].color+'25';
-      svg += '<path d="'+arcPath(r1+2,r2-2,a1,a2)+'" fill="'+color+'" stroke="var(--bg)" stroke-width="1"';
-      if (\!isFuture) {
-        svg += ' style="cursor:pointer;" onclick="clickHabitSegment(\''+dk+'\',\''+HABITS[h].id+'\')"';
-      }
-      svg += '/>';
-    }
-
-    const labelR = innerR + HABITS.length*(ringW+gap) + 14;
-    const midAngle = startAngle + (day-0.5)*degPerDay;
-    const [lx,ly] = polarXY(labelR, midAngle);
-    const rot = midAngle + 90;
-    const fw  = isToday ? '800' : '400';
-    const fc  = isToday ? '#fff' : isFuture ? 'var(--border2)' : 'var(--text3)';
-    svg += '<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" text-anchor="middle" dominant-baseline="middle" font-size="9" font-family="sans-serif" transform="rotate('+rot.toFixed(1)+','+lx.toFixed(1)+','+ly.toFixed(1)+')" fill="'+fc+'" font-weight="'+fw+'">'+day+'</text>';
-
-    if (isToday) {
-      const r1=innerR-4, r2=innerR+HABITS.length*(ringW+gap)+4;
-      const pa=arcPath(r1,r2,a1-0.5,a2+0.5);
-      svg = '<path d="'+pa+'" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>' + svg;
-    }
-  }
-
-  const todayDk = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
-  const todayData = userHabits()[todayDk] || {};
-  const doneTodayCount = isCurrentMonth ? HABITS.filter(h=>todayData[h.id]).length : '-';
-  const centerTop = isCurrentMonth ? doneTodayCount+'/4' : getMonthCompletionRate(year,month)+'%';
-  const centerBot = isCurrentMonth ? 'TODAY' : monthName.slice(0,3).toUpperCase();
-  svg += '<text x="'+cx+'" y="'+(cy-14)+'" text-anchor="middle" font-size="26" font-weight="800" font-family="sans-serif" fill="var(--text)">'+centerTop+'</text>';
-  svg += '<text x="'+cx+'" y="'+(cy+12)+'" text-anchor="middle" font-size="10" font-family="sans-serif" fill="var(--text3)">'+centerBot+'</text>';
-
-  document.getElementById('habit-svg').innerHTML = svg;
-
-  const checkinData = isCurrentMonth ? (userHabits()[todayDk]||{}) : {};
-  document.getElementById('habit-checkin-rows').innerHTML = HABITS.map(h => {
-    const done = checkinData[h.id];
-    const opacity = isCurrentMonth ? '1' : '0.4';
-    return '<div class="habit-row" style="opacity:'+opacity+';">' +
-      '<div><div class="habit-label"><span class="habit-dot" style="background:'+h.color+';"></span><span>'+h.emoji+' '+h.label+'</span></div></div>' +
-      '<button class="habit-toggle '+(done?'done':'')+'" '+(isCurrentMonth ? 'onclick="toggleHabit(\''+h.id+'\')"' : 'disabled')+
-        ' style="'+(done?'background:'+h.color+';border-color:'+h.color+';color:#000;':'')+'">'+
-        (done?'&#10003;':'')+
-      '</button></div>';
-  }).join('');
-
-  document.getElementById('habit-streaks').innerHTML = HABITS.map(h => {
-    const s = getStreak(h.id);
-    return '<div style="margin-bottom:10px;">'+
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">'+
-        '<span style="font-size:12px;color:var(--text2);">'+h.emoji+' '+h.label+'</span>'+
-        '<span style="font-family:var(--font-d);font-size:13px;font-weight:700;color:'+h.color+';">'+s+' days</span>'+
-      '</div>'+
-      '<div style="height:4px;background:var(--bg3);border-radius:2px;">'+
-        '<div style="height:4px;background:'+h.color+';border-radius:2px;width:'+Math.min(100,(s/30)*100)+'%;transition:width 0.4s;"></div>'+
-      '</div></div>';
-  }).join('');
-
-  const mSumEl = document.getElementById('habit-month-summary');
-  if (mSumEl) {
-    mSumEl.innerHTML = HABITS.map(h => {
-      const rate = getHabitMonthRate(h.id, year, month);
-      return '<div style="margin-bottom:8px;">'+
-        '<div style="display:flex;justify-content:space-between;margin-bottom:3px;">'+
-          '<span style="font-size:12px;color:var(--text2);">'+h.emoji+' '+h.label+'</span>'+
-          '<span style="font-family:var(--font-d);font-size:12px;font-weight:700;color:'+h.color+';">'+rate+'%</span>'+
-        '</div>'+
-        '<div style="height:4px;background:var(--bg3);border-radius:2px;">'+
-          '<div style="height:4px;background:'+h.color+';border-radius:2px;width:'+rate+'%;"></div>'+
-        '</div></div>';
-    }).join('');
-  }
-
-  document.getElementById('habit-legend').innerHTML = HABITS.map((h,i) =>
-    '<div class="habit-legend-item"><div style="width:28px;height:10px;border-radius:2px;background:'+h.color+';flex-shrink:0;"></div>'+
-    '<span>Anillo '+(i+1)+' — '+h.label+'</span></div>'
-  ).join('');
-
-  renderHabitYear(year);
-}
-
-function clickHabitSegment(dateKey, habitId) {
-  const uh = userHabits();
-  if (\!uh[dateKey]) uh[dateKey] = {};
-  uh[dateKey][habitId] = \!uh[dateKey][habitId];
-  save();
-  renderHabits();
-}
-
-function renderHabitYear(year) {
-  const titleEl = document.getElementById('habit-year-title');
-  if (titleEl) titleEl.textContent = 'Annual summary ' + year;
-
-  const annualBarsEl = document.getElementById('habit-annual-bars');
-  if (annualBarsEl) {
-    annualBarsEl.innerHTML = HABITS.map(h => {
-      let totalDone = 0, totalDays = 0;
-      for (let m = 0; m < 12; m++) {
-        const now = new Date();
-        if (year > now.getFullYear() || (year === now.getFullYear() && m > now.getMonth())) break;
-        const dim = new Date(year, m+1, 0).getDate();
-        const isCurrentMonth = year === now.getFullYear() && m === now.getMonth();
-        const days = isCurrentMonth ? now.getDate() : dim;
-        for (let d = 1; d <= days; d++) {
-          const k = year+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-          totalDays++;
-          const uhY = userHabits(); if (uhY[k] && uhY[k][h.id]) totalDone++;
-        }
-      }
-      const rate = totalDays ? Math.round(totalDone/totalDays*100) : 0;
-      return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">'+
-        '<span style="font-size:12px;color:var(--text2);width:160px;flex-shrink:0;">'+h.emoji+' '+h.label+'</span>'+
-        '<div style="flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;">'+
-          '<div style="height:6px;background:'+h.color+';border-radius:3px;width:'+rate+'%;transition:width 0.5s;"></div>'+
-        '</div>'+
-        '<span style="font-family:var(--font-d);font-size:12px;font-weight:700;color:'+h.color+';width:36px;text-align:right;">'+rate+'%</span>'+
-      '</div>';
-    }).join('');
-  }
-
-  const gridEl = document.getElementById('habit-year-grid');
-  if (\!gridEl) return;
   const now = new Date();
   const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   gridEl.innerHTML = monthNames.map((mn, m) => {
