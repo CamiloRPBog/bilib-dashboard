@@ -359,6 +359,12 @@
         <p>Daily tracking · monthly follow-up · annual summary</p>
       </div>
 
+      <!-- User toggle -->
+      <div style="display:flex;gap:8px;margin-bottom:1.5rem;">
+        <button id="habit-btn-camilo" class="nav-btn active" onclick="switchHabitUser('camilo')" style="font-size:13px;padding:6px 18px;border-radius:20px;border:1px solid var(--border2);">👤 Camilo</button>
+        <button id="habit-btn-juliana" class="nav-btn" onclick="switchHabitUser('juliana')" style="font-size:13px;padding:6px 18px;border-radius:20px;border:1px solid var(--border2);">👤 Juliana</button>
+      </div>
+
       <!-- Month nav -->
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:1.5rem;flex-wrap:wrap;">
         <button class="week-nav-btn" onclick="shiftHabitMonth(-1)">&#8592; Previous month</button>
@@ -731,7 +737,7 @@
 
 <script>
 // ==================== STATE ====================
-let state = { objectives:[], tasks:[], team:[], leads:[], habits:{}, weeks:{}, _weekOffset:0, _weekSubTab:'plan', _habitMonthOffset:0, _editObjId:null, _editKrId:null, _editKrObjId:null, _editTaskId:null, _editLeadId:null, _currentQ:'all', _taskFilters:{status:'',priority:'',search:''}, _crmFilters:{proyecto:'',search:''} };
+let state = { objectives:[], tasks:[], team:[], leads:[], habits:{}, weeks:{}, _weekOffset:0, _weekSubTab:'plan', _habitMonthOffset:0, _habitUser:'camilo', _editObjId:null, _editKrId:null, _editKrObjId:null, _editTaskId:null, _editLeadId:null, _currentQ:'all', _taskFilters:{status:'',priority:'',search:''}, _crmFilters:{proyecto:'',search:''} };
 let SHEET_URL = '';
 let autoSyncTimer = null;
 let _pushTimer = null; // debounce para auto-push
@@ -1411,28 +1417,54 @@ function habitKey(date) {
 }
 function todayKey() { return habitKey(new Date()); }
 
+// Retorna los hábitos del usuario activo (camilo o juliana)
+function userHabits() {
+  const u = state._habitUser || 'camilo';
+  // Migración: si hay datos en el formato viejo (flat), moverlos a camilo
+  if (!state.habits[u] || typeof state.habits[u] !== 'object' || Array.isArray(state.habits[u])) {
+    // Detectar si hay datos del formato viejo (claves tipo "2026-04-28")
+    const hasOldData = Object.keys(state.habits).some(k => /^\d{4}-\d{2}-\d{2}$/.test(k));
+    if (hasOldData && u === 'camilo') {
+      const oldData = {};
+      Object.keys(state.habits).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k)).forEach(k => { oldData[k] = state.habits[k]; });
+      state.habits = { camilo: oldData, juliana: {} };
+    } else {
+      if (!state.habits.camilo) state.habits.camilo = {};
+      if (!state.habits.juliana) state.habits.juliana = {};
+    }
+  }
+  return state.habits[u];
+}
+
+function switchHabitUser(user) {
+  state._habitUser = user;
+  document.getElementById('habit-btn-camilo').classList.toggle('active', user === 'camilo');
+  document.getElementById('habit-btn-juliana').classList.toggle('active', user === 'juliana');
+  renderHabits();
+}
+
 function toggleHabit(habitId) {
   const key = todayKey();
-  if (!state.habits[key]) state.habits[key] = {};
-  state.habits[key][habitId] = !state.habits[key][habitId];
+  const uh = userHabits();
+  if (!uh[key]) uh[key] = {};
+  uh[key][habitId] = !uh[key][habitId];
   save();
   renderHabits();
 }
 
 function getStreak(habitId) {
+  const uh = userHabits();
   let streak = 0;
   const d = new Date();
-  // Check yesterday backward (don't penalize if today not done yet)
   d.setDate(d.getDate() - 1);
   while (true) {
     const k = habitKey(d);
-    if (state.habits[k] && state.habits[k][habitId]) {
+    if (uh[k] && uh[k][habitId]) {
       streak++;
       d.setDate(d.getDate() - 1);
     } else break;
   }
-  // If today is done, add 1
-  const todayDone = state.habits[todayKey()] && state.habits[todayKey()][habitId];
+  const todayDone = uh[todayKey()] && uh[todayKey()][habitId];
   if (todayDone) streak++;
   return streak;
 }
@@ -1466,7 +1498,8 @@ function getMonthCompletionRate(year, month) {
     const key = year + '-' + String(month+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
     HABITS.forEach(h => {
       total++;
-      if (state.habits[key] && state.habits[key][h.id]) done++;
+      const uh = userHabits();
+      if (uh[key] && uh[key][h.id]) done++;
     });
   }
   return total ? Math.round(done/total*100) : 0;
@@ -1480,7 +1513,7 @@ function getHabitMonthRate(habitId, year, month) {
   let done = 0;
   for (let day = 1; day <= daysCounted; day++) {
     const key = year + '-' + String(month+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
-    if (state.habits[key] && state.habits[key][habitId]) done++;
+    const uh2 = userHabits(); if (uh2[key] && uh2[key][habitId]) done++;
   }
   return daysCounted ? Math.round(done/daysCounted*100) : 0;
 }
@@ -1536,7 +1569,7 @@ function renderHabits() {
     const a1 = startAngle + (day-1)*degPerDay + segGap/2;
     const a2 = startAngle + day*degPerDay - segGap/2;
     const dk = year+'-'+String(month+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
-    const dayData = state.habits[dk] || {};
+    const dayData = userHabits()[dk] || {};
     const isToday = isCurrentMonth && day === now.getDate();
     const isFuture = isCurrentMonth && day > now.getDate();
 
@@ -1569,7 +1602,7 @@ function renderHabits() {
 
   // Center
   const todayDk = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
-  const todayData = state.habits[todayDk] || {};
+  const todayData = userHabits()[todayDk] || {};
   const doneTodayCount = isCurrentMonth ? HABITS.filter(h=>todayData[h.id]).length : '-';
   const centerTop = isCurrentMonth ? doneTodayCount+'/4' : getMonthCompletionRate(year,month)+'%';
   const centerBot = isCurrentMonth ? 'TODAY' : monthName.slice(0,3).toUpperCase();
@@ -1579,7 +1612,7 @@ function renderHabits() {
   document.getElementById('habit-svg').innerHTML = svg;
 
   // ── Daily check-in ────────────────────────────────────────────────────────
-  const checkinData = isCurrentMonth ? (state.habits[todayDk]||{}) : {};
+  const checkinData = isCurrentMonth ? (userHabits()[todayDk]||{}) : {};
   document.getElementById('habit-checkin-rows').innerHTML = HABITS.map(h => {
     const done = checkinData[h.id];
     const opacity = isCurrentMonth ? '1' : '0.4';
@@ -1631,8 +1664,9 @@ function renderHabits() {
 }
 
 function clickHabitSegment(dateKey, habitId) {
-  if (!state.habits[dateKey]) state.habits[dateKey] = {};
-  state.habits[dateKey][habitId] = !state.habits[dateKey][habitId];
+  const uh = userHabits();
+  if (!uh[dateKey]) uh[dateKey] = {};
+  uh[dateKey][habitId] = !uh[dateKey][habitId];
   save();
   renderHabits();
 }
@@ -1655,7 +1689,7 @@ function renderHabitYear(year) {
         for (let d = 1; d <= days; d++) {
           const k = year+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
           totalDays++;
-          if (state.habits[k] && state.habits[k][h.id]) totalDone++;
+          const uhY = userHabits(); if (uhY[k] && uhY[k][h.id]) totalDone++;
         }
       }
       const rate = totalDays ? Math.round(totalDone/totalDays*100) : 0;
