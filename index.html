@@ -161,6 +161,20 @@
   .sync-dot.error{background:var(--red);}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
 
+  /* TASKS KANBAN */
+  .tasks-kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .tk-col{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:14px;min-height:240px;}
+  .tk-col-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .tk-col-count{background:var(--bg3);border-radius:20px;padding:2px 8px;font-size:11px;color:var(--text2);}
+  .tk-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:11px 13px;margin-bottom:8px;cursor:pointer;transition:border-color 0.15s;}
+  .tk-card:hover{border-color:var(--border2);}
+  .tk-card-name{font-size:13px;font-weight:500;line-height:1.4;margin-bottom:6px;}
+  .tk-card-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .tk-view-toggle{display:flex;gap:4px;background:var(--bg3);border-radius:8px;padding:3px;margin-right:8px;}
+  .tk-view-btn{font-size:12px;font-weight:500;padding:5px 12px;border-radius:6px;border:none;cursor:pointer;background:transparent;color:var(--text2);transition:all 0.15s;}
+  .tk-view-btn.active{background:var(--bg2);color:var(--text);border:1px solid var(--border2);}
+  @media(max-width:768px){.tasks-kanban{grid-template-columns:repeat(2,1fr);}}
+
   /* CRM KANBAN */
   .kanban-col{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:14px;min-height:300px;}
   .kanban-col-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
@@ -235,7 +249,23 @@
   .config-steps code{background:var(--bg3);padding:2px 6px;border-radius:4px;font-family:monospace;color:var(--accent);font-size:12px;}
   .url-input-row{display:flex;gap:8px;margin-top:1rem;}
   .url-input-row input{flex:1;}
-  @media(max-width:768px){.stats-row{grid-template-columns:repeat(2,1fr);}.team-grid{grid-template-columns:1fr 1fr;}.topbar{padding:0 1rem;}.main{padding:1rem;}}
+  @media(max-width:768px){
+    .stats-row{grid-template-columns:repeat(2,1fr);}
+    .team-grid{grid-template-columns:1fr 1fr;}
+    .topbar{padding:0 1rem;}
+    .main{padding:1rem;}
+    /* Habit tracker: colapsar a una columna en móvil */
+    .habit-page{grid-template-columns:1fr !important;}
+    /* SVG circular: limitar ancho en móvil */
+    #habit-svg{width:100% !important;max-width:400px;height:auto !important;}
+    /* Grilla del dashboard (2 columnas) → 1 columna en móvil */
+    .week-subgrid{grid-template-columns:1fr !important;}
+  }
+  /* Nav horizontal con scroll en pantallas pequeñas */
+  @media(max-width:900px){
+    .nav{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
+    .nav-btn{white-space:nowrap;}
+  }
 </style>
 </head>
 <body>
@@ -350,30 +380,44 @@
     <!-- TASKS -->
     <div class="view" id="view-tasks">
       <div class="page-header"><h2>Tasks</h2><p>All tasks for the BILIB USA 2026 plan</p></div>
-      <div style="display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;">
-        <select class="form-select" style="width:auto;min-width:140px;" onchange="filterTasks('status',this.value)">
-          <option value="">All los estados</option>
+      <div style="display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center;">
+        <!-- Toggle Table / Kanban -->
+        <div class="tk-view-toggle">
+          <button id="tv-table" class="tk-view-btn" onclick="setTaskView('table')">☰ Table</button>
+          <button id="tv-kanban" class="tk-view-btn active" onclick="setTaskView('kanban')">⬛ Kanban</button>
+        </div>
+        <select class="form-select" id="tf-status" style="width:auto;min-width:140px;" onchange="filterTasks('status',this.value)">
+          <option value="">Todos los estados</option>
           <option value="pending">Pending</option>
           <option value="in-progress">In Progress</option>
           <option value="completed">Completed</option>
           <option value="blocked">Blocked</option>
         </select>
-        <select class="form-select" style="width:auto;min-width:140px;" onchange="filterTasks('priority',this.value)">
-          <option value="">All priorities</option>
+        <select class="form-select" id="tf-priority" style="width:auto;min-width:130px;" onchange="filterTasks('priority',this.value)">
+          <option value="">Todas las prioridades</option>
           <option value="high">High</option>
           <option value="medium">Medium</option>
           <option value="low">Low</option>
         </select>
-        <input class="form-input" style="width:220px;" placeholder="Search task..." oninput="filterTasks('search',this.value)"/>
-        <button class="btn btn-primary" onclick="openAddTask()" style="margin-left:auto;">+ New Task</button>
+        <select class="form-select" id="tf-assignee" style="width:auto;min-width:140px;" onchange="filterTasks('assignee',this.value)">
+          <option value="">Todos los assignees</option>
+          <option value="Camilo">👤 Camilo</option>
+          <option value="Juliana">👤 Juliana</option>
+        </select>
+        <input class="form-input" id="tf-search" style="width:200px;" placeholder="🔍 Buscar tarea..." oninput="filterTasks('search',this.value)"/>
+        <button class="btn btn-ghost" onclick="clearTaskFilters()" style="font-size:12px;padding:8px 14px;">✕ Limpiar</button>
+        <button class="btn btn-primary" onclick="openAddTask()" style="margin-left:auto;">+ Nueva Tarea</button>
       </div>
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;">
+      <!-- Table view -->
+      <div id="tasks-table-view" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;">
         <table><thead><tr>
-          <th>Task</th><th>Objective</th><th>Assignee</th>
-          <th>Priority</th><th>Status</th><th>Date</th><th></th>
+          <th>Tarea</th><th>Objetivo</th><th>Assignee</th>
+          <th>Prioridad</th><th>Estado</th><th>Predecesoras</th><th>Fecha</th><th></th>
         </tr></thead>
         <tbody id="tasks-tbody"></tbody></table>
       </div>
+      <!-- Kanban view -->
+      <div id="tasks-kanban-view" class="tasks-kanban"></div>
     </div>
 
     <!-- TEAM -->
@@ -725,6 +769,11 @@
     </div>
     <div class="form-group"><label class="form-label">Objective relacionado</label>
       <select class="form-select" id="task-obj"><option value="">No objective asignado</option></select></div>
+    <div class="form-group">
+      <label class="form-label">Predecesoras <span style="font-size:11px;color:var(--text3);font-weight:400;text-transform:none;">(tareas que deben completarse antes)</span></label>
+      <select class="form-select" id="task-predecessors" multiple style="min-height:88px;font-size:13px;"></select>
+      <div style="font-size:11px;color:var(--text3);margin-top:5px;">Ctrl+click para seleccionar varias · ⚠ = pendiente &nbsp; ✓ = completada</div>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-task')">Cancel</button>
       <button class="btn btn-danger" id="task-delete-btn" style="display:none;" onclick="deleteTask()">Delete</button>
@@ -793,7 +842,7 @@
 
 <script>
 // ==================== STATE ====================
-let state = { objectives:[], tasks:[], team:[], leads:[], habits:{}, weeks:{}, _weekOffset:0, _weekSubTab:'plan', _habitMonthOffset:0, _habitUser:'camilo', _weekHabitUser:'camilo', _editObjId:null, _editKrId:null, _editKrObjId:null, _editTaskId:null, _editLeadId:null, _currentQ:'all', _taskFilters:{status:'',priority:'',search:''}, _crmFilters:{proyecto:'',search:''} };
+let state = { objectives:[], tasks:[], team:[], leads:[], habits:{}, weeks:{}, _weekOffset:0, _weekSubTab:'plan', _habitMonthOffset:0, _habitUser:'camilo', _weekHabitUser:'camilo', _editObjId:null, _editKrId:null, _editKrObjId:null, _editTaskId:null, _editLeadId:null, _currentQ:'all', _taskFilters:{status:'',priority:'',assignee:'',search:''}, _crmFilters:{proyecto:'',search:''}, _taskView:'kanban' };
 let SHEET_URL = '';
 let autoSyncTimer = null;
 let _pushTimer = null; // debounce para auto-push
@@ -972,8 +1021,48 @@ async function pushToSheets() {
   if (!SHEET_URL) return;
   setSyncStatus('syncing','Guardando en Sheets...');
   try {
-    // POST con Content-Type: text/plain evita el CORS preflight
-    // (application/json sí dispara preflight, text/plain no)
+    // ── Merge-first: traer el estado de Sheets ANTES de sobrescribir ──────────
+    // Esto evita que tareas añadidas por Telegram (u otro cliente) se pierdan
+    // cuando el dashboard hace push con su caché local desactualizada.
+    try {
+      const pullRes = await fetch(SHEET_URL + '?action=getData');
+      const pullResp = await pullRes.json();
+      if (pullResp.ok && pullResp.state) {
+        const s = pullResp.state;
+        // Tareas: incorporar las que existen en Sheets pero no localmente
+        if (s.tasks && s.tasks.length) {
+          const localIds = new Set(state.tasks.map(t => t.id));
+          const externalTasks = s.tasks.filter(t => !localIds.has(t.id));
+          if (externalTasks.length > 0) {
+            state.tasks = [...state.tasks, ...externalTasks];
+          }
+        }
+        // Hábitos: merge por usuario/fecha (nunca borrar registros externos)
+        if (s.habits) {
+          ['camilo','juliana'].forEach(u => {
+            if (s.habits[u]) {
+              if (!state.habits[u]) state.habits[u] = {};
+              Object.keys(s.habits[u]).forEach(dateKey => {
+                if (!state.habits[u][dateKey]) {
+                  state.habits[u][dateKey] = s.habits[u][dateKey];
+                }
+              });
+            }
+          });
+        }
+        // Guardar estado mergeado en localStorage (sin disparar otro push)
+        try { localStorage.setItem('bilib2026_data', JSON.stringify({
+          objectives:state.objectives, tasks:state.tasks, team:state.team,
+          leads:state.leads, habits:state.habits, weeks:state.weeks
+        })); } catch(e){}
+        renderCurrentView();
+      }
+    } catch(mergeErr) {
+      // Si el pull previo falla, continuamos con el push local (mejor que no guardar)
+      console.warn('merge-pull falló, push con estado local:', mergeErr);
+    }
+
+    // ── Push del estado ya mergeado ───────────────────────────────────────────
     const payload = { objectives:state.objectives, tasks:state.tasks, team:state.team, leads:state.leads, habits:state.habits, weeks:state.weeks };
     const res = await fetch(SHEET_URL, {
       method: 'POST',
@@ -1240,17 +1329,117 @@ function renderObjCard(o) {
 function toggleObj(id) { const o=state.objectives.find(x=>x.id===id); if(o){o.open=!o.open;renderOKRs();} }
 
 // ==================== TASKS ====================
+function setTaskView(view) {
+  state._taskView = view;
+  const tableBtn   = document.getElementById('tv-table');
+  const kanbanBtn  = document.getElementById('tv-kanban');
+  const tableView  = document.getElementById('tasks-table-view');
+  const kanbanView = document.getElementById('tasks-kanban-view');
+  if (tableBtn)  tableBtn.classList.toggle('active',  view === 'table');
+  if (kanbanBtn) kanbanBtn.classList.toggle('active', view === 'kanban');
+  if (tableView)  tableView.style.display  = view === 'table'  ? '' : 'none';
+  if (kanbanView) kanbanView.style.display = view === 'kanban' ? '' : 'none';
+  renderTasks();
+}
+
 function filterTasks(key, val) { state._taskFilters[key]=val; renderTasks(); }
-function renderTasks() {
-  let list=state.tasks;
+function clearTaskFilters() {
+  state._taskFilters={status:'',priority:'',assignee:'',search:''};
+  const s=document.getElementById('tf-status'); if(s) s.value='';
+  const p=document.getElementById('tf-priority'); if(p) p.value='';
+  const a=document.getElementById('tf-assignee'); if(a) a.value='';
+  const q=document.getElementById('tf-search'); if(q) q.value='';
+  renderTasks();
+}
+
+function _applyTaskFilters(list) {
   if (state._taskFilters.status)   list=list.filter(t=>t.status===state._taskFilters.status);
   if (state._taskFilters.priority) list=list.filter(t=>t.priority===state._taskFilters.priority);
+  if (state._taskFilters.assignee) list=list.filter(t=>(t.assignee||'').toLowerCase()===state._taskFilters.assignee.toLowerCase());
   if (state._taskFilters.search)   list=list.filter(t=>t.name.toLowerCase().includes(state._taskFilters.search.toLowerCase()));
+  return list;
+}
+
+function renderTasksKanban() {
+  const kanbanEl = document.getElementById('tasks-kanban-view');
+  if (!kanbanEl) return;
+  const list = _applyTaskFilters([...state.tasks]);
+  const COLS = [
+    { key:'pending',     label:'Pending',     color:'#8a8f99' },
+    { key:'in-progress', label:'In Progress',  color:'#3b82f6' },
+    { key:'blocked',     label:'Blocked',      color:'#ef4444' },
+    { key:'completed',   label:'Completed',    color:'#00e5a0' },
+  ];
+  const priEmoji = { high:'🔴', medium:'🟡', low:'⚪' };
+  kanbanEl.innerHTML = COLS.map(col => {
+    const cards = list.filter(t => t.status === col.key);
+    const total = cards.length;
+    const cardHtml = cards.map(t => {
+      const obj = state.objectives.find(o => o.id === t.objId);
+      return '<div class="tk-card" onclick="openEditTask(\''+t.id+'\')">'+
+        '<div class="tk-card-name">'+t.name+'</div>'+
+        '<div class="tk-card-meta">'+
+          (t.assignee ? '<span style="font-size:11px;background:var(--bg2);padding:2px 8px;border-radius:20px;color:var(--text2);">'+t.assignee+'</span>' : '')+
+          '<span style="font-size:11px;" title="'+t.priority+'">'+( priEmoji[t.priority]||'•')+'</span>'+
+          (t.due ? '<span style="font-size:10px;color:var(--text3);">📅 '+t.due+'</span>' : '')+
+        '</div>'+
+        (obj ? '<div style="font-size:10px;color:var(--text3);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">→ '+obj.name.slice(0,34)+'</div>' : '')+
+      '</div>';
+    }).join('');
+    const emptyHtml = !total
+      ? '<div style="padding:20px 0;text-align:center;font-size:12px;color:var(--text3);">Sin tareas</div>'
+      : '';
+    return '<div class="tk-col">'+
+      '<div class="tk-col-title" style="color:'+col.color+';">'+
+        '<span style="width:8px;height:8px;border-radius:50%;background:'+col.color+';display:inline-block;"></span>'+
+        col.label+
+        '<span class="tk-col-count">'+total+'</span>'+
+        (col.key !== 'completed' ? '<button onclick="openAddTask()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;line-height:1;" title="Nueva tarea">+</button>' : '')+
+      '</div>'+
+      cardHtml + emptyHtml +
+    '</div>';
+  }).join('');
+}
+
+function renderTasks() {
+  // Mostrar/ocultar contenedores según vista activa
+  const tableView  = document.getElementById('tasks-table-view');
+  const kanbanView = document.getElementById('tasks-kanban-view');
+  if (tableView)  tableView.style.display  = state._taskView === 'table'  ? '' : 'none';
+  if (kanbanView) kanbanView.style.display = state._taskView === 'kanban' ? '' : 'none';
+  if (state._taskView === 'kanban') { renderTasksKanban(); return; }
+
+  let list=_applyTaskFilters([...state.tasks]);
   const tbody=document.getElementById('tasks-tbody');
-  if (!list.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text3);">No tasks.</td></tr>';return;}
+  if (!list.length){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text3);">No hay tareas con estos filtros.</td></tr>';return;}
   tbody.innerHTML=list.map(t=>{
     const obj=state.objectives.find(o=>o.id===t.objId);
-    return '<tr onclick="openEditTask(\''+t.id+'\')" style="cursor:pointer;"><td style="font-weight:500;">'+t.name+'</td><td style="color:var(--text2);font-size:12px;">'+(obj?obj.name.slice(0,28)+'…':'—')+'</td><td style="color:var(--text2);">'+(t.assignee||'—')+'</td><td><span class="priority-badge '+t.priority+'">'+({high:'High',medium:'Medium',low:'Low'}[t.priority]||t.priority)+'</span></td><td><span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;background:'+taskStatusColor(t.status)+'18;color:'+taskStatusColor(t.status)+';"><span style="width:4px;height:4px;border-radius:50%;background:currentColor;display:inline-block;"></span>'+taskStatusLabel(t.status)+'</span></td><td style="color:var(--text2);font-size:12px;">'+(t.due||'—')+'</td><td><button onclick="event.stopPropagation();openEditTask(\''+t.id+'\')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;">✏</button></td></tr>';
+    // Predecesoras cell
+    const preds=t.predecessors||[];
+    let predCell;
+    if (!preds.length) {
+      predCell='<span style="color:var(--text3);font-size:12px;">—</span>';
+    } else {
+      const chips=preds.map(pid=>{
+        const pt=state.tasks.find(x=>x.id===pid);
+        if(!pt)return null;
+        const done=pt.status==='completed';
+        const color=done?'var(--accent)':'var(--amber)';
+        const bg=done?'rgba(0,229,160,0.1)':'rgba(245,158,11,0.1)';
+        return '<span style="display:inline-flex;align-items:center;gap:3px;font-size:11px;padding:2px 7px;border-radius:20px;background:'+bg+';color:'+color+';margin:1px 2px;white-space:nowrap;">'+(done?'✓':'⚠')+' '+pt.name.slice(0,22)+'</span>';
+      }).filter(Boolean);
+      predCell=chips.length?chips.join(''):'<span style="color:var(--text3);font-size:12px;">—</span>';
+    }
+    return '<tr onclick="openEditTask(\''+t.id+'\')" style="cursor:pointer;">'+
+      '<td style="font-weight:500;">'+t.name+'</td>'+
+      '<td style="color:var(--text2);font-size:12px;">'+(obj?obj.name.slice(0,28)+'…':'—')+'</td>'+
+      '<td><span style="font-size:12px;padding:3px 10px;border-radius:20px;background:var(--bg3);">'+(t.assignee||'—')+'</span></td>'+
+      '<td><span class="priority-badge '+t.priority+'">'+({high:'High',medium:'Med',low:'Low'}[t.priority]||t.priority)+'</span></td>'+
+      '<td><span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;border-radius:20px;background:'+taskStatusColor(t.status)+'18;color:'+taskStatusColor(t.status)+';"><span style="width:4px;height:4px;border-radius:50%;background:currentColor;display:inline-block;"></span>'+taskStatusLabel(t.status)+'</span></td>'+
+      '<td>'+predCell+'</td>'+
+      '<td style="color:var(--text2);font-size:12px;">'+(t.due||'—')+'</td>'+
+      '<td><button onclick="event.stopPropagation();openEditTask(\''+t.id+'\')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;">✏</button></td>'+
+      '</tr>';
   }).join('');
 }
 
@@ -1347,9 +1536,58 @@ function openAddKR(objId){state._editKrObjId=objId;state._editKrId=null;document
 function openEditKR(objId,krId){const o=state.objectives.find(x=>x.id===objId);const kr=o&&o.krs.find(k=>k.id===krId);if(!kr)return;state._editKrObjId=objId;state._editKrId=krId;document.getElementById('kr-modal-title').textContent='Edit Key Result';document.getElementById('kr-name').value=kr.name;document.getElementById('kr-start').value=kr.start;document.getElementById('kr-target').value=kr.target;document.getElementById('kr-current').value=kr.current;document.getElementById('kr-unit').value=kr.unit||'';document.getElementById('kr-status').value=kr.status;document.getElementById('kr-delete-btn').style.display='';openModal('modal-kr');}
 function saveKR(){const name=document.getElementById('kr-name').value.trim();if(!name){alert('Description is required.');return;}const o=state.objectives.find(x=>x.id===state._editKrObjId);if(!o)return;const data={name,start:+document.getElementById('kr-start').value||0,target:+document.getElementById('kr-target').value||100,current:+document.getElementById('kr-current').value||0,unit:document.getElementById('kr-unit').value.trim(),status:document.getElementById('kr-status').value};if(state._editKrId){const kr=o.krs.find(k=>k.id===state._editKrId);if(kr)Object.assign(kr,data);}else{o.krs.push({id:uid(),...data});}save();closeModal('modal-kr');renderCurrentView();}
 function deleteKR(){const o=state.objectives.find(x=>x.id===state._editKrObjId);if(!o||!state._editKrId)return;if(!confirm('Delete este Key Result?'))return;o.krs=o.krs.filter(k=>k.id!==state._editKrId);save();closeModal('modal-kr');renderCurrentView();}
-function openAddTask(objId){state._editTaskId=null;document.getElementById('task-modal-title').textContent='Nueva Task';document.getElementById('task-name').value='';document.getElementById('task-desc').value='';document.getElementById('task-assignee').value='';document.getElementById('task-due').value='';document.getElementById('task-priority').value='medium';document.getElementById('task-status').value='pending';const sel=document.getElementById('task-obj');sel.innerHTML='<option value="">No objective</option>'+state.objectives.map(o=>'<option value="'+o.id+'"'+(objId===o.id?' selected':'')+'>'+o.name+'</option>').join('');document.getElementById('task-delete-btn').style.display='none';openModal('modal-task');}
-function openEditTask(id){const t=state.tasks.find(x=>x.id===id);if(!t)return;state._editTaskId=id;document.getElementById('task-modal-title').textContent='Editar Task';document.getElementById('task-name').value=t.name;document.getElementById('task-desc').value=t.desc||'';document.getElementById('task-assignee').value=t.assignee||'';document.getElementById('task-due').value=t.due||'';document.getElementById('task-priority').value=t.priority||'medium';document.getElementById('task-status').value=t.status||'pending';const sel=document.getElementById('task-obj');sel.innerHTML='<option value="">No objective</option>'+state.objectives.map(o=>'<option value="'+o.id+'"'+(t.objId===o.id?' selected':'')+'>'+o.name+'</option>').join('');document.getElementById('task-delete-btn').style.display='';openModal('modal-task');}
-function saveTask(){const name=document.getElementById('task-name').value.trim();if(!name){alert('Name is required.');return;}const data={name,desc:document.getElementById('task-desc').value.trim(),assignee:document.getElementById('task-assignee').value.trim(),due:document.getElementById('task-due').value,priority:document.getElementById('task-priority').value,status:document.getElementById('task-status').value,objId:document.getElementById('task-obj').value};if(state._editTaskId){const t=state.tasks.find(x=>x.id===state._editTaskId);if(t)Object.assign(t,data);}else{state.tasks.push({id:uid(),...data});}save();closeModal('modal-task');renderCurrentView();}
+function _buildPredSelect(excludeId, selectedIds) {
+  const sel = document.getElementById('task-predecessors');
+  const others = state.tasks.filter(t => t.id !== excludeId);
+  sel.innerHTML = others.map(t => {
+    const done = t.status === 'completed';
+    const icon = done ? '✓' : (t.status === 'in-progress' ? '▶' : (t.status === 'blocked' ? '⛔' : '○'));
+    const isSelected = (selectedIds || []).includes(t.id);
+    return '<option value="'+t.id+'"'+(isSelected?' selected':'')+'>'+icon+' '+t.name+(t.assignee?' ('+t.assignee+')':'')+'</option>';
+  }).join('');
+}
+function openAddTask(objId){
+  state._editTaskId=null;
+  document.getElementById('task-modal-title').textContent='Nueva Tarea';
+  document.getElementById('task-name').value='';
+  document.getElementById('task-desc').value='';
+  document.getElementById('task-assignee').value='';
+  document.getElementById('task-due').value='';
+  document.getElementById('task-priority').value='medium';
+  document.getElementById('task-status').value='pending';
+  const sel=document.getElementById('task-obj');
+  sel.innerHTML='<option value="">No objective</option>'+state.objectives.map(o=>'<option value="'+o.id+'"'+(objId===o.id?' selected':'')+'>'+o.name+'</option>').join('');
+  _buildPredSelect(null, []);
+  document.getElementById('task-delete-btn').style.display='none';
+  openModal('modal-task');
+}
+function openEditTask(id){
+  const t=state.tasks.find(x=>x.id===id);
+  if(!t)return;
+  state._editTaskId=id;
+  document.getElementById('task-modal-title').textContent='Editar Tarea';
+  document.getElementById('task-name').value=t.name;
+  document.getElementById('task-desc').value=t.desc||'';
+  document.getElementById('task-assignee').value=t.assignee||'';
+  document.getElementById('task-due').value=t.due||'';
+  document.getElementById('task-priority').value=t.priority||'medium';
+  document.getElementById('task-status').value=t.status||'pending';
+  const sel=document.getElementById('task-obj');
+  sel.innerHTML='<option value="">No objective</option>'+state.objectives.map(o=>'<option value="'+o.id+'"'+(t.objId===o.id?' selected':'')+'>'+o.name+'</option>').join('');
+  _buildPredSelect(id, t.predecessors||[]);
+  document.getElementById('task-delete-btn').style.display='';
+  openModal('modal-task');
+}
+function saveTask(){
+  const name=document.getElementById('task-name').value.trim();
+  if(!name){alert('Name is required.');return;}
+  const predSel=document.getElementById('task-predecessors');
+  const predecessors=Array.from(predSel.selectedOptions).map(o=>o.value);
+  const data={name,desc:document.getElementById('task-desc').value.trim(),assignee:document.getElementById('task-assignee').value.trim(),due:document.getElementById('task-due').value,priority:document.getElementById('task-priority').value,status:document.getElementById('task-status').value,objId:document.getElementById('task-obj').value,predecessors};
+  if(state._editTaskId){const t=state.tasks.find(x=>x.id===state._editTaskId);if(t)Object.assign(t,data);}
+  else{state.tasks.push({id:uid(),...data});}
+  save();closeModal('modal-task');renderCurrentView();
+}
 function deleteTask(){if(!state._editTaskId)return;if(!confirm('Delete esta tarea?'))return;state.tasks=state.tasks.filter(t=>t.id!==state._editTaskId);save();closeModal('modal-task');renderCurrentView();}
 function openAddMember(){document.getElementById('member-name').value='';document.getElementById('member-role').value='';document.getElementById('member-email').value='';document.getElementById('member-color').value='#00e5a0';openModal('modal-member');}
 function saveMember(){const name=document.getElementById('member-name').value.trim();if(!name){alert('Name is required.');return;}state.team.push({id:uid(),name,role:document.getElementById('member-role').value.trim(),email:document.getElementById('member-email').value.trim(),color:document.getElementById('member-color').value});save();closeModal('modal-member');renderTeam();}
@@ -2114,7 +2352,7 @@ window.addEventListener('DOMContentLoaded', function() {
   loadLocal();
   renderDashboard();
   renderOKRs();
-  renderTasks();
+  setTaskView(state._taskView || 'kanban'); // inicializar toggle y renderizar tasks
   renderTeam();
   renderTimeline();
   renderCRM();
