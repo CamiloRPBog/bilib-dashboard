@@ -1584,7 +1584,7 @@ function openEditTask(id){
   document.getElementById('task-status').value=t.status||'pending';
   const sel=document.getElementById('task-obj');
   sel.innerHTML='<option value="">No objective</option>'+state.objectives.map(o=>'<option value="'+o.id+'"'+(t.objId===o.id?' selected':'')+'>'+o.name+'</option>').join('');
-  _buildPredSelect(id, t.predecessors||[]);
+  _buildPredSelect(id, []);
   document.getElementById('task-delete-btn').style.display='';
   openModal('modal-task');
 }
