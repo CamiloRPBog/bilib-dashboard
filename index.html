@@ -1073,7 +1073,13 @@ async function pushToSheets() {
     }
 
     // ── Push del estado ya mergeado ───────────────────────────────────────────
-    const payload = { objectives:state.objectives, tasks:state.tasks, team:state.team, leads:state.leads, habits:state.habits, weeks:state.weeks };
+    // Siempre limpiar predecesoras antes de enviar a Sheets (evita ciclos de datos corruptos)
+    const cleanTasks = state.tasks.map(function(t) {
+      const ct = Object.assign({}, t);
+      ct.predecessors = [];
+      return ct;
+    });
+    const payload = { objectives:state.objectives, tasks:cleanTasks, team:state.team, leads:state.leads, habits:state.habits, weeks:state.weeks };
     const res = await fetch(SHEET_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
