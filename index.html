@@ -970,6 +970,9 @@ function loadLocal() {
       state.weeks      = {};
       save();
     }
+    // Limpiar predecesores de todas las tareas (campo que no se usa)
+    state.tasks.forEach(function(t) { t.predecessors = []; });
+
     SHEET_URL = localStorage.getItem('bilib2026_url')||'';
     if (SHEET_URL) {
       document.getElementById('sheets-url').value = SHEET_URL;
@@ -1004,6 +1007,8 @@ async function syncFromSheets() {
       if (s.leads      && s.leads.length)       state.leads      = s.leads;
       if (s.habits)                             state.habits     = s.habits;
       if (s.weeks)                              state.weeks      = s.weeks;
+      // Limpiar predecesores incorrectos que vengan de Sheets
+      state.tasks.forEach(function(t) { t.predecessors = []; });
       // Guardar en localStorage sin disparar otro push
       try { localStorage.setItem('bilib2026_data', JSON.stringify({ objectives:state.objectives, tasks:state.tasks, team:state.team, leads:state.leads, habits:state.habits, weeks:state.weeks })); } catch(e){}
       renderCurrentView();
