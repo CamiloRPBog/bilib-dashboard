@@ -1007,10 +1007,15 @@ async function syncFromSheets() {
       if (s.leads      && s.leads.length)       state.leads      = s.leads;
       if (s.habits)                             state.habits     = s.habits;
       if (s.weeks)                              state.weeks      = s.weeks;
-      // Limpiar predecesores incorrectos que vengan de Sheets
+        // Limpiar predecesores de todas las tareas
       state.tasks.forEach(function(t) { t.predecessors = []; });
       // Guardar en localStorage sin disparar otro push
       try { localStorage.setItem('bilib2026_data', JSON.stringify({ objectives:state.objectives, tasks:state.tasks, team:state.team, leads:state.leads, habits:state.habits, weeks:state.weeks })); } catch(e){}
+      // Si nunca se limpió en Sheets, hacer push una sola vez para limpiar la fuente de verdad
+      if (!localStorage.getItem('bilib_pred_cleared')) {
+        localStorage.setItem('bilib_pred_cleared', '1');
+        setTimeout(pushToSheets, 1000);
+      }
       renderCurrentView();
     }
 
