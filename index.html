@@ -499,11 +499,12 @@
         <p>Plan your week and measure your achievement</p>
       </div>
 
-      <!-- Sub-tabs: Planning / Tablero -->
+      <!-- Sub-tabs: Planning / Tablero / Tareas -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:12px;">
         <div class="week-tabs">
           <button class="week-tab active" id="wtab-plan" onclick="switchWeekTab('plan')">Planning</button>
           <button class="week-tab" id="wtab-review" onclick="switchWeekTab('review')">Weekly Board</button>
+          <button class="week-tab" id="wtab-tasks" onclick="switchWeekTab('tasks')">Tareas</button>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
           <button class="week-nav-btn" onclick="shiftWeek(-1)">&#8592; Previous</button>
@@ -606,6 +607,20 @@
           </div>
           <div id="sprint-trend"></div>
         </div>
+      </div>
+
+      <!-- TAREAS POR SEMANA -->
+      <div id="weekly-tasks-view" style="display:none;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap;">
+          <div style="display:flex;background:var(--bg3);border-radius:8px;padding:3px;gap:2px;">
+            <button id="twv-btn-2" class="week-tab active" onclick="setTaskWeekMode('2weeks')">Esta semana + siguiente</button>
+            <button id="twv-btn-month" class="week-tab" onclick="setTaskWeekMode('month')">Mes completo</button>
+          </div>
+          <select class="form-select" style="width:auto;min-width:140px;" id="twv-assignee-filter" onchange="renderWeeklyTasks()">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <div id="weekly-tasks-grid"></div>
       </div>
     </div>
 
@@ -771,8 +786,11 @@
       <select class="form-select" id="task-obj"><option value="">No objective asignado</option></select></div>
     <div class="form-group">
       <label class="form-label">Predecesoras <span style="font-size:11px;color:var(--text3);font-weight:400;text-transform:none;">(tareas que deben completarse antes)</span></label>
-      <select class="form-select" id="task-predecessors" multiple style="min-height:88px;font-size:13px;"></select>
-      <div style="font-size:11px;color:var(--text3);margin-top:5px;">Ctrl+click para seleccionar varias · ⊖ = pendiente &nbsp; ✓ = completada</div>
+      <div id="pred-chips" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;margin-bottom:8px;"></div>
+      <select class="form-select" id="pred-add-select" style="font-size:13px;">
+        <option value="">＋ Agregar predecesora...</option>
+      </select>
+      <input type="hidden" id="task-predecessors" value="[]"/>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-task')">Cancel</button>
@@ -970,8 +988,12 @@ function loadLocal() {
       state.weeks      = {};
       save();
     }
-    // Limpiar predecesores de todas las tareas (campo que no se usa)
-    state.tasks.forEach(function(t) { t.predecessors = []; });
+    // Migración v2: limpiar predecesoras corruptas (solo una vez)
+    if (!localStorage.getItem('bilib_pred_v2')) {
+      state.tasks.forEach(function(t) { t.predecessors = []; });
+      localStorage.setItem('bilib_pred_v2', '1');
+      save();
+    }
 
     SHEET_URL = localStorage.getItem('bilib2026_url')||'';
     if (SHEET_URL) {
@@ -1007,8 +1029,6 @@ async function syncFromSheets() {
       if (s.leads      && s.leads.length)       state.leads      = s.leads;
       if (s.habits)                             state.habits     = s.habits;
       if (s.weeks)                              state.weeks      = s.weeks;
-        // Limpiar predecesores de todas las tareas
-      state.tasks.forEach(function(t) { t.predecessors = []; });
       // Guardar en localStorage sin disparar otro push
       try { localStorage.setItem('bilib2026_data', JSON.stringify({ objectives:state.objectives, tasks:state.tasks, team:state.team, leads:state.leads, habits:state.habits, weeks:state.weeks })); } catch(e){}
       // Si nunca se limpió en Sheets, hacer push una sola vez para limpiar la fuente de verdad
@@ -1073,12 +1093,7 @@ async function pushToSheets() {
     }
 
     // ── Push del estado ya mergeado ───────────────────────────────────────────
-    // Siempre limpiar predecesoras antes de enviar a Sheets (evita ciclos de datos corruptos)
-    const cleanTasks = state.tasks.map(function(t) {
-      const ct = Object.assign({}, t);
-      ct.predecessors = [];
-      return ct;
-    });
+    const cleanTasks = state.tasks.map(function(t) { return Object.assign({}, t); });
     const payload = { objectives:state.objectives, tasks:cleanTasks, team:state.team, leads:state.leads, habits:state.habits, weeks:state.weeks };
     const res = await fetch(SHEET_URL, {
       method: 'POST',
@@ -1553,14 +1568,33 @@ function openEditKR(objId,krId){const o=state.objectives.find(x=>x.id===objId);c
 function saveKR(){const name=document.getElementById('kr-name').value.trim();if(!name){alert('Description is required.');return;}const o=state.objectives.find(x=>x.id===state._editKrObjId);if(!o)return;const data={name,start:+document.getElementById('kr-start').value||0,target:+document.getElementById('kr-target').value||100,current:+document.getElementById('kr-current').value||0,unit:document.getElementById('kr-unit').value.trim(),status:document.getElementById('kr-status').value};if(state._editKrId){const kr=o.krs.find(k=>k.id===state._editKrId);if(kr)Object.assign(kr,data);}else{o.krs.push({id:uid(),...data});}save();closeModal('modal-kr');renderCurrentView();}
 function deleteKR(){const o=state.objectives.find(x=>x.id===state._editKrObjId);if(!o||!state._editKrId)return;if(!confirm('Delete este Key Result?'))return;o.krs=o.krs.filter(k=>k.id!==state._editKrId);save();closeModal('modal-kr');renderCurrentView();}
 function _buildPredSelect(excludeId, selectedIds) {
-  const sel = document.getElementById('task-predecessors');
-  const others = state.tasks.filter(t => t.id !== excludeId);
-  sel.innerHTML = others.map(t => {
-    const done = t.status === 'completed';
-    const icon = done ? '✓' : (t.status === 'in-progress' ? '▶' : (t.status === 'blocked' ? '⛔' : '○'));
-    const isSelected = (selectedIds || []).includes(t.id);
-    return '<option value="'+t.id+'"'+(isSelected?' selected':'')+'>'+icon+' '+t.name+(t.assignee?' ('+t.assignee+')':'')+'</option>';
-  }).join('');
+  let _predIds = (selectedIds || []).slice();
+  function renderPredUI() {
+    document.getElementById('task-predecessors').value = JSON.stringify(_predIds);
+    const chipsEl = document.getElementById('pred-chips');
+    if (!chipsEl) return;
+    chipsEl.innerHTML = _predIds.length === 0
+      ? '<span style="font-size:12px;color:var(--text3);">Sin predecesoras</span>'
+      : _predIds.map(pid => {
+          const pt = state.tasks.find(x => x.id === pid);
+          if (!pt) return '';
+          const done = pt.status === 'completed';
+          const color = done ? 'var(--accent)' : 'var(--amber)';
+          return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:4px 10px;border-radius:20px;background:var(--bg3);border:1px solid var(--border2);color:'+color+';">'
+            +(done?'✓ ':'⏳ ')+pt.name.slice(0,30)
+            +'<button type="button" onclick="_predRemove(\''+pid+'\')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;line-height:1;padding:0 0 0 4px;">×</button>'
+            +'</span>';
+        }).join('');
+    const addSel = document.getElementById('pred-add-select');
+    if (!addSel) return;
+    const available = state.tasks.filter(t => t.id !== excludeId && !_predIds.includes(t.id));
+    addSel.innerHTML = '<option value="">＋ Agregar predecesora...</option>'
+      + available.map(t => '<option value="'+t.id+'">'+(t.status==='completed'?'✓':t.status==='in-progress'?'▶':'○')+' '+t.name+(t.assignee?' ('+t.assignee+')':'')+'</option>').join('');
+  }
+  window._predRemove = function(pid) { _predIds = _predIds.filter(x => x !== pid); renderPredUI(); };
+  const addSel = document.getElementById('pred-add-select');
+  if (addSel) addSel.onchange = function() { if (this.value && !_predIds.includes(this.value)) { _predIds.push(this.value); renderPredUI(); } };
+  renderPredUI();
 }
 function openAddTask(objId){
   state._editTaskId=null;
@@ -1590,15 +1624,14 @@ function openEditTask(id){
   document.getElementById('task-status').value=t.status||'pending';
   const sel=document.getElementById('task-obj');
   sel.innerHTML='<option value="">No objective</option>'+state.objectives.map(o=>'<option value="'+o.id+'"'+(t.objId===o.id?' selected':'')+'>'+o.name+'</option>').join('');
-  _buildPredSelect(id, []);
+  _buildPredSelect(id, t.predecessors||[]);
   document.getElementById('task-delete-btn').style.display='';
   openModal('modal-task');
 }
 function saveTask(){
   const name=document.getElementById('task-name').value.trim();
   if(!name){alert('Name is required.');return;}
-  const predSel=document.getElementById('task-predecessors');
-  const predecessors=Array.from(predSel.selectedOptions).map(o=>o.value);
+  const predecessors=JSON.parse(document.getElementById('task-predecessors').value||'[]');
   const data={name,desc:document.getElementById('task-desc').value.trim(),assignee:document.getElementById('task-assignee').value.trim(),due:document.getElementById('task-due').value,priority:document.getElementById('task-priority').value,status:document.getElementById('task-status').value,objId:document.getElementById('task-obj').value,predecessors};
   if(state._editTaskId){const t=state.tasks.find(x=>x.id===state._editTaskId);if(t)Object.assign(t,data);}
   else{state.tasks.push({id:uid(),...data});}
@@ -1650,9 +1683,104 @@ function switchWeekTab(tab) {
   state._weekSubTab = tab;
   document.getElementById('wtab-plan').classList.toggle('active', tab === 'plan');
   document.getElementById('wtab-review').classList.toggle('active', tab === 'review');
+  document.getElementById('wtab-tasks').classList.toggle('active', tab === 'tasks');
   document.getElementById('weekly-plan-view').style.display   = tab === 'plan'   ? '' : 'none';
   document.getElementById('weekly-review-view').style.display = tab === 'review' ? '' : 'none';
+  document.getElementById('weekly-tasks-view').style.display  = tab === 'tasks'  ? '' : 'none';
   if (tab === 'review') renderWeekReview();
+  if (tab === 'tasks')  renderWeeklyTasks();
+}
+
+if (!window._taskWeekMode) window._taskWeekMode = '2weeks';
+function setTaskWeekMode(mode) {
+  window._taskWeekMode = mode;
+  document.getElementById('twv-btn-2').classList.toggle('active', mode === '2weeks');
+  document.getElementById('twv-btn-month').classList.toggle('active', mode === 'month');
+  renderWeeklyTasks();
+}
+function getMondayOf(date) {
+  const d = new Date(date); d.setHours(0,0,0,0);
+  const day = d.getDay();
+  d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day));
+  return d;
+}
+function renderWeeklyTasks() {
+  const grid = document.getElementById('weekly-tasks-grid');
+  if (!grid) return;
+  const afSel = document.getElementById('twv-assignee-filter');
+  const curAssignee = afSel ? afSel.value : '';
+  if (afSel) {
+    const people = [...new Set(state.tasks.map(t=>t.assignee).filter(Boolean))].sort();
+    afSel.innerHTML = '<option value="">Todos</option>' + people.map(p=>'<option value="'+p+'"'+(p===curAssignee?' selected':'')+'>'+p+'</option>').join('');
+  }
+  const today = new Date(); today.setHours(0,0,0,0);
+  const anchorMonday = getMondayOf(today);
+  let weeks = [];
+  if (window._taskWeekMode === '2weeks') {
+    weeks = [0, 1];
+  } else {
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const monthEnd   = new Date(today.getFullYear(), today.getMonth()+1, 0);
+    const firstMon   = getMondayOf(monthStart);
+    let cur = new Date(firstMon);
+    while (cur <= monthEnd) {
+      weeks.push(Math.round((cur - anchorMonday) / 604800000));
+      cur.setDate(cur.getDate() + 7);
+    }
+  }
+  const DAYS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  const sc = {pending:'#8a8f99','in-progress':'#3b82f6',completed:'#00e5a0',blocked:'#ef4444'};
+  const sl = {pending:'Pendiente','in-progress':'En Progreso',completed:'Completada',blocked:'Bloqueada'};
+  let allTasks = state.tasks.filter(t => t.status !== 'completed');
+  if (curAssignee) allTasks = allTasks.filter(t => t.assignee === curAssignee);
+  const noDue = allTasks.filter(t => !t.due);
+  function card(t) {
+    const obj = state.objectives.find(o=>o.id===t.objId);
+    const color = sc[t.status]||'#8a8f99';
+    return '<div onclick="openEditTask(\''+t.id+'\')" style="cursor:pointer;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:6px;" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
+      +'<div style="font-size:13px;font-weight:500;margin-bottom:4px;">'+t.name+'</div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">'
+        +(t.assignee?'<span style="font-size:11px;color:var(--text2);">'+t.assignee+'</span>':'')
+        +'<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:'+color+'18;color:'+color+';">'+( sl[t.status]||t.status)+'</span>'
+        +(obj?'<span style="font-size:10px;color:var(--text3);">'+obj.name.slice(0,22)+'</span>':'')
+      +'</div></div>';
+  }
+  let html = '';
+  if (noDue.length) {
+    html += '<div style="margin-bottom:20px;"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">Sin fecha · '+noDue.length+' tareas</div>'+noDue.map(card).join('')+'</div>';
+  }
+  weeks.forEach(function(wOffset) {
+    const mon = new Date(anchorMonday); mon.setDate(mon.getDate() + wOffset * 7);
+    const sun = new Date(mon); sun.setDate(sun.getDate() + 6);
+    const isThisWeek = wOffset === 0, isNextWeek = wOffset === 1;
+    const label = isThisWeek ? 'Esta semana' : isNextWeek ? 'Próxima semana'
+      : mon.toLocaleDateString('es-ES',{day:'numeric',month:'short'})+' – '+sun.toLocaleDateString('es-ES',{day:'numeric',month:'short'});
+    const accent = isThisWeek ? 'var(--accent)' : isNextWeek ? '#3b82f6' : 'var(--text2)';
+    const byDay = [0,1,2,3,4,5,6].map(di => {
+      const d = new Date(mon); d.setDate(d.getDate()+di);
+      const ds = d.toISOString().slice(0,10);
+      return {date:d, ds, tasks:allTasks.filter(t=>t.due===ds)};
+    });
+    const weekTotal = byDay.reduce((a,d)=>a+d.tasks.length,0);
+    html += '<div style="margin-bottom:24px;">'
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid '+accent+'30;">'
+        +'<span style="font-family:var(--font-d);font-size:15px;font-weight:700;color:'+accent+';">'+label+'</span>'
+        +'<span style="font-size:11px;color:var(--text3);">'+mon.toLocaleDateString('es-ES',{day:'numeric',month:'short'})+' – '+sun.toLocaleDateString('es-ES',{day:'numeric',month:'short'})+'</span>'
+        +'<span style="background:var(--bg3);border-radius:20px;padding:2px 10px;font-size:11px;color:var(--text2);">'+weekTotal+' tareas</span>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px;">';
+    byDay.forEach(function(day,di) {
+      const isToday = day.ds === today.toISOString().slice(0,10);
+      const isPast  = day.date < today && !isToday;
+      html += '<div>'
+        +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;padding:4px 6px;border-radius:6px;text-align:center;'
+          +(isToday?'background:var(--accent);color:#000;':isPast?'color:var(--text3);opacity:0.5;':'color:var(--text3);')+'">'+DAYS[di]+' '+day.date.getDate()+'</div>'
+        +(day.tasks.length ? day.tasks.map(card).join('') : '<div style="font-size:11px;color:var(--text3);text-align:center;padding:8px 0;">—</div>')
+        +'</div>';
+    });
+    html += '</div></div>';
+  });
+  grid.innerHTML = html || '<p style="color:var(--text3);font-size:13px;">No hay tareas con fecha en este rango.</p>';
 }
 
 function currentWeekData() {
