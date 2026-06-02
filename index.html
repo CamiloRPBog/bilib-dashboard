@@ -499,12 +499,11 @@
         <p>Plan your week and measure your achievement</p>
       </div>
 
-      <!-- Sub-tabs: Planning / Tablero / Tareas -->
+      <!-- Sub-tabs: Planning / Tablero -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:12px;">
         <div class="week-tabs">
           <button class="week-tab active" id="wtab-plan" onclick="switchWeekTab('plan')">Planning</button>
           <button class="week-tab" id="wtab-review" onclick="switchWeekTab('review')">Weekly Board</button>
-          <button class="week-tab" id="wtab-tasks" onclick="switchWeekTab('tasks')">Tareas</button>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
           <button class="week-nav-btn" onclick="shiftWeek(-1)">&#8592; Previous</button>
@@ -607,20 +606,6 @@
           </div>
           <div id="sprint-trend"></div>
         </div>
-      </div>
-
-      <!-- TAREAS POR SEMANA -->
-      <div id="weekly-tasks-view" style="display:none;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap;">
-          <div style="display:flex;background:var(--bg3);border-radius:8px;padding:3px;gap:2px;">
-            <button id="twv-btn-2" class="week-tab active" onclick="setTaskWeekMode('2weeks')">Esta semana + siguiente</button>
-            <button id="twv-btn-month" class="week-tab" onclick="setTaskWeekMode('month')">Mes completo</button>
-          </div>
-          <select class="form-select" style="width:auto;min-width:140px;" id="twv-assignee-filter" onchange="renderWeeklyTasks()">
-            <option value="">Todos</option>
-          </select>
-        </div>
-        <div id="weekly-tasks-grid"></div>
       </div>
     </div>
 
@@ -786,13 +771,8 @@
       <select class="form-select" id="task-obj"><option value="">No objective asignado</option></select></div>
     <div class="form-group">
       <label class="form-label">Predecesoras <span style="font-size:11px;color:var(--text3);font-weight:400;text-transform:none;">(tareas que deben completarse antes)</span></label>
-      <div id="pred-chips" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;margin-bottom:8px;"></div>
-      <div style="display:flex;gap:8px;">
-        <select class="form-select" id="pred-add-select" style="font-size:13px;">
-          <option value="">＋ Agregar predecesora...</option>
-        </select>
-      </div>
-      <input type="hidden" id="task-predecessors" value="[]"/>
+      <select class="form-select" id="task-predecessors" multiple style="min-height:88px;font-size:13px;"></select>
+      <div style="font-size:11px;color:var(--text3);margin-top:5px;">Ctrl+click para seleccionar varias · ⊖ = pendiente &nbsp; ✓ = completada</div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-task')">Cancel</button>
@@ -990,13 +970,8 @@ function loadLocal() {
       state.weeks      = {};
       save();
     }
-
-    // Migración v2: limpiar predecesoras corruptas (solo una vez)
-    if (!localStorage.getItem('bilib_pred_v2')) {
-      state.tasks.forEach(function(t) { t.predecessors = []; });
-      localStorage.setItem('bilib_pred_v2', '1');
-      save();
-    }
+    // Limpiar predecesores de todas las tareas (campo que no se usa)
+    state.tasks.forEach(function(t) { t.predecessors = []; });
 
     SHEET_URL = localStorage.getItem('bilib2026_url')||'';
     if (SHEET_URL) {
@@ -1032,6 +1007,8 @@ async function syncFromSheets() {
       if (s.leads      && s.leads.length)       state.leads      = s.leads;
       if (s.habits)                             state.habits     = s.habits;
       if (s.weeks)                              state.weeks      = s.weeks;
+        // Limpiar predecesores de todas las tareas
+      state.tasks.forEach(function(t) { t.predecessors = []; });
       // Guardar en localStorage sin disparar otro push
       try { localStorage.setItem('bilib2026_data', JSON.stringify({ objectives:state.objectives, tasks:state.tasks, team:state.team, leads:state.leads, habits:state.habits, weeks:state.weeks })); } catch(e){}
       // Si nunca se limpió en Sheets, hacer push una sola vez para limpiar la fuente de verdad
@@ -1096,8 +1073,11 @@ async function pushToSheets() {
     }
 
     // ── Push del estado ya mergeado ───────────────────────────────────────────
+    // Siempre limpiar predecesoras antes de enviar a Sheets (evita ciclos de datos corruptos)
     const cleanTasks = state.tasks.map(function(t) {
-      return Object.assign({}, t);
+      const ct = Object.assign({}, t);
+      ct.predecessors = [];
+      return ct;
     });
     const payload = { objectives:state.objectives, tasks:cleanTasks, team:state.team, leads:state.leads, habits:state.habits, weeks:state.weeks };
     const res = await fetch(SHEET_URL, {
@@ -1573,59 +1553,14 @@ function openEditKR(objId,krId){const o=state.objectives.find(x=>x.id===objId);c
 function saveKR(){const name=document.getElementById('kr-name').value.trim();if(!name){alert('Description is required.');return;}const o=state.objectives.find(x=>x.id===state._editKrObjId);if(!o)return;const data={name,start:+document.getElementById('kr-start').value||0,target:+document.getElementById('kr-target').value||100,current:+document.getElementById('kr-current').value||0,unit:document.getElementById('kr-unit').value.trim(),status:document.getElementById('kr-status').value};if(state._editKrId){const kr=o.krs.find(k=>k.id===state._editKrId);if(kr)Object.assign(kr,data);}else{o.krs.push({id:uid(),...data});}save();closeModal('modal-kr');renderCurrentView();}
 function deleteKR(){const o=state.objectives.find(x=>x.id===state._editKrObjId);if(!o||!state._editKrId)return;if(!confirm('Delete este Key Result?'))return;o.krs=o.krs.filter(k=>k.id!==state._editKrId);save();closeModal('modal-kr');renderCurrentView();}
 function _buildPredSelect(excludeId, selectedIds) {
-  let _predIds = (selectedIds || []).slice();
-
-  function renderPredUI() {
-    // Hidden input con los IDs actuales
-    document.getElementById('task-predecessors').value = JSON.stringify(_predIds);
-
-    // Chips de predecesoras seleccionadas
-    const chipsEl = document.getElementById('pred-chips');
-    if (!chipsEl) return;
-    if (_predIds.length === 0) {
-      chipsEl.innerHTML = '<span style="font-size:12px;color:var(--text3);">Sin predecesoras</span>';
-    } else {
-      chipsEl.innerHTML = _predIds.map(pid => {
-        const pt = state.tasks.find(x => x.id === pid);
-        if (!pt) return '';
-        const done = pt.status === 'completed';
-        const color = done ? 'var(--accent)' : 'var(--amber)';
-        return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:4px 10px;border-radius:20px;background:var(--bg3);border:1px solid var(--border2);color:'+color+';">'
-          +(done?'✓ ':'⏳ ')
-          +pt.name.slice(0,30)
-          +'<button type="button" onclick="_predRemove(\''+pid+'\')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;line-height:1;padding:0 0 0 4px;" title="Quitar">×</button>'
-          +'</span>';
-      }).join('');
-    }
-
-    // Dropdown: solo tareas no seleccionadas y distintas a la que se edita
-    const sel = document.getElementById('pred-add-select');
-    if (!sel) return;
-    const available = state.tasks.filter(t => t.id !== excludeId && !_predIds.includes(t.id));
-    sel.innerHTML = '<option value="">＋ Agregar predecesora...</option>'
-      + available.map(t => {
-        const done = t.status === 'completed';
-        const icon = done ? '✓' : (t.status === 'in-progress' ? '▶' : '○');
-        return '<option value="'+t.id+'">'+icon+' '+t.name+(t.assignee?' ('+t.assignee+')':'')+'</option>';
-      }).join('');
-  }
-
-  // Exponer helpers globales para los onclick
-  window._predRemove = function(pid) {
-    _predIds = _predIds.filter(x => x !== pid);
-    renderPredUI();
-  };
-
-  const addSel = document.getElementById('pred-add-select');
-  if (addSel) {
-    addSel.onchange = function() {
-      if (!this.value) return;
-      if (!_predIds.includes(this.value)) _predIds.push(this.value);
-      renderPredUI();
-    };
-  }
-
-  renderPredUI();
+  const sel = document.getElementById('task-predecessors');
+  const others = state.tasks.filter(t => t.id !== excludeId);
+  sel.innerHTML = others.map(t => {
+    const done = t.status === 'completed';
+    const icon = done ? '✓' : (t.status === 'in-progress' ? '▶' : (t.status === 'blocked' ? '⛔' : '○'));
+    const isSelected = (selectedIds || []).includes(t.id);
+    return '<option value="'+t.id+'"'+(isSelected?' selected':'')+'>'+icon+' '+t.name+(t.assignee?' ('+t.assignee+')':'')+'</option>';
+  }).join('');
 }
 function openAddTask(objId){
   state._editTaskId=null;
@@ -1655,15 +1590,15 @@ function openEditTask(id){
   document.getElementById('task-status').value=t.status||'pending';
   const sel=document.getElementById('task-obj');
   sel.innerHTML='<option value="">No objective</option>'+state.objectives.map(o=>'<option value="'+o.id+'"'+(t.objId===o.id?' selected':'')+'>'+o.name+'</option>').join('');
-  _buildPredSelect(id, t.predecessors||[]);
+  _buildPredSelect(id, []);
   document.getElementById('task-delete-btn').style.display='';
   openModal('modal-task');
 }
 function saveTask(){
   const name=document.getElementById('task-name').value.trim();
   if(!name){alert('Name is required.');return;}
-  const predRaw=document.getElementById('task-predecessors').value;
-  const predecessors=JSON.parse(predRaw||'[]');
+  const predSel=document.getElementById('task-predecessors');
+  const predecessors=Array.from(predSel.selectedOptions).map(o=>o.value);
   const data={name,desc:document.getElementById('task-desc').value.trim(),assignee:document.getElementById('task-assignee').value.trim(),due:document.getElementById('task-due').value,priority:document.getElementById('task-priority').value,status:document.getElementById('task-status').value,objId:document.getElementById('task-obj').value,predecessors};
   if(state._editTaskId){const t=state.tasks.find(x=>x.id===state._editTaskId);if(t)Object.assign(t,data);}
   else{state.tasks.push({id:uid(),...data});}
@@ -1715,151 +1650,9 @@ function switchWeekTab(tab) {
   state._weekSubTab = tab;
   document.getElementById('wtab-plan').classList.toggle('active', tab === 'plan');
   document.getElementById('wtab-review').classList.toggle('active', tab === 'review');
-  document.getElementById('wtab-tasks').classList.toggle('active', tab === 'tasks');
   document.getElementById('weekly-plan-view').style.display   = tab === 'plan'   ? '' : 'none';
   document.getElementById('weekly-review-view').style.display = tab === 'review' ? '' : 'none';
-  document.getElementById('weekly-tasks-view').style.display  = tab === 'tasks'  ? '' : 'none';
   if (tab === 'review') renderWeekReview();
-  if (tab === 'tasks')  renderWeeklyTasks();
-}
-
-// ==================== WEEKLY TASKS VIEW ====================
-if (!window._taskWeekMode) window._taskWeekMode = '2weeks';
-function setTaskWeekMode(mode) {
-  window._taskWeekMode = mode;
-  document.getElementById('twv-btn-2').classList.toggle('active', mode === '2weeks');
-  document.getElementById('twv-btn-month').classList.toggle('active', mode === 'month');
-  renderWeeklyTasks();
-}
-
-function getMondayOf(date) {
-  const d = new Date(date);
-  const day = d.getDay(); // 0=Sun,1=Mon,...
-  const diff = (day === 0) ? -6 : 1 - day;
-  d.setDate(d.getDate() + diff);
-  d.setHours(0,0,0,0);
-  return d;
-}
-
-function renderWeeklyTasks() {
-  const grid = document.getElementById('weekly-tasks-grid');
-  if (!grid) return;
-
-  // Populate assignee filter
-  const afSel = document.getElementById('twv-assignee-filter');
-  const curAssignee = afSel ? afSel.value : '';
-  if (afSel) {
-    const people = [...new Set(state.tasks.map(t=>t.assignee).filter(Boolean))].sort();
-    afSel.innerHTML = '<option value="">Todos</option>' + people.map(p=>'<option value="'+p+'"'+(p===curAssignee?' selected':'')+'>'+p+'</option>').join('');
-  }
-
-  const today = new Date(); today.setHours(0,0,0,0);
-  const anchorMonday = getMondayOf(today);
-
-  // Decide range of weeks to show
-  let weeks = [];
-  if (window._taskWeekMode === '2weeks') {
-    weeks = [0, 1]; // this week + next
-  } else {
-    // Full month: from first Monday of current month to last week that contains a day in the month
-    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-    const monthEnd   = new Date(today.getFullYear(), today.getMonth()+1, 0);
-    const firstMon   = getMondayOf(monthStart);
-    weeks = [];
-    let cur = new Date(firstMon);
-    while (cur <= monthEnd) {
-      const diffDays = Math.round((cur - anchorMonday) / 86400000);
-      weeks.push(diffDays / 7);
-      cur.setDate(cur.getDate() + 7);
-    }
-  }
-
-  const DAYS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-  const DAYS_FULL = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
-  const statusColor = {pending:'#8a8f99','in-progress':'#3b82f6',completed:'#00e5a0',blocked:'#ef4444'};
-  const statusLabel = {pending:'Pendiente','in-progress':'En Progreso',completed:'Completada',blocked:'Bloqueada'};
-
-  let allTasks = state.tasks.filter(t => t.status !== 'completed');
-  if (curAssignee) allTasks = allTasks.filter(t => t.assignee === curAssignee);
-
-  // Tasks with no due date — show once at top
-  const noDue = allTasks.filter(t => !t.due);
-
-  function taskCard(t) {
-    const sc = statusColor[t.status]||'#8a8f99';
-    const sl = statusLabel[t.status]||t.status;
-    const obj = state.objectives.find(o=>o.id===t.objId);
-    return '<div onclick="openEditTask(\''+t.id+'\')" style="cursor:pointer;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:6px;transition:border-color 0.15s;" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
-      +'<div style="font-size:13px;font-weight:500;margin-bottom:5px;">'+t.name+'</div>'
-      +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'
-        +(t.assignee?'<span style="font-size:11px;color:var(--text2);">'+t.assignee+'</span>':'')
-        +'<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:20px;background:'+sc+'18;color:'+sc+';"><span style="width:4px;height:4px;border-radius:50%;background:currentColor;display:inline-block;"></span>'+sl+'</span>'
-        +(obj?'<span style="font-size:10px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px;">'+obj.name.slice(0,25)+'</span>':'')
-      +'</div>'
-    +'</div>';
-  }
-
-  let html = '';
-
-  // No-due section
-  if (noDue.length) {
-    html += '<div style="margin-bottom:20px;">'
-      +'<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">Sin fecha · '+noDue.length+' tarea'+(noDue.length!==1?'s':'')+'</div>'
-      + noDue.map(taskCard).join('')
-    +'</div>';
-  }
-
-  // Week sections
-  weeks.forEach(function(wOffset) {
-    const mon = new Date(anchorMonday);
-    mon.setDate(mon.getDate() + wOffset * 7);
-    const sun = new Date(mon); sun.setDate(sun.getDate() + 6);
-
-    const isThisWeek = wOffset === 0;
-    const isNextWeek = wOffset === 1;
-    const weekLabel = isThisWeek ? 'Esta semana' : isNextWeek ? 'Próxima semana'
-      : mon.toLocaleDateString('es-ES',{day:'numeric',month:'short'}) + ' – ' + sun.toLocaleDateString('es-ES',{day:'numeric',month:'short'});
-
-    // Group tasks by day
-    const byDay = [0,1,2,3,4,5,6].map(function(di) {
-      const d = new Date(mon); d.setDate(d.getDate() + di);
-      const ds = d.toISOString().slice(0,10);
-      return { date: d, dateStr: ds, tasks: allTasks.filter(t => t.due === ds) };
-    });
-
-    const weekTasks = byDay.reduce(function(acc,d){ return acc.concat(d.tasks); }, []);
-    const accentColor = isThisWeek ? 'var(--accent)' : isNextWeek ? '#3b82f6' : 'var(--text2)';
-
-    html += '<div style="margin-bottom:24px;">'
-      + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid '+accentColor+'20;">'
-        + '<span style="font-family:var(--font-d);font-size:15px;font-weight:700;color:'+accentColor+';">'+weekLabel+'</span>'
-        + '<span style="font-size:11px;color:var(--text3);">'+mon.toLocaleDateString('es-ES',{day:'numeric',month:'short'})+' – '+sun.toLocaleDateString('es-ES',{day:'numeric',month:'short'})+'</span>'
-        + '<span style="background:var(--bg3);border-radius:20px;padding:2px 10px;font-size:11px;color:var(--text2);">'+weekTasks.length+' tareas</span>'
-      + '</div>'
-      + '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px;">';
-
-    byDay.forEach(function(day, di) {
-      const isToday = day.dateStr === today.toISOString().slice(0,10);
-      const isPast  = day.date < today && !isToday;
-      html += '<div>'
-        + '<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;padding:4px 6px;border-radius:6px;text-align:center;'
-            + (isToday ? 'background:var(--accent);color:#000;' : 'color:var(--text3);')
-            + (isPast  ? 'opacity:0.5;' : '') + '">'
-            + DAYS[di] + ' ' + day.date.getDate()
-        + '</div>';
-      if (day.tasks.length === 0) {
-        html += '<div style="font-size:11px;color:var(--text3);text-align:center;padding:8px 0;">—</div>';
-      } else {
-        html += day.tasks.map(taskCard).join('');
-      }
-      html += '</div>';
-    });
-
-    html += '</div></div>';
-  });
-
-  if (!html) html = '<p style="color:var(--text3);font-size:13px;">No hay tareas con fecha en este rango.</p>';
-  grid.innerHTML = html;
 }
 
 function currentWeekData() {
@@ -2373,4 +2166,215 @@ function renderHabits() {
   const now = new Date();
   const viewDate = new Date(now.getFullYear(), now.getMonth() + state._habitMonthOffset, 1);
   const year  = viewDate.getFullYear();
-  const month = vie
+  const month = viewDate.getMonth();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const isCurrentMonth = year === now.getFullYear() && month === now.getMonth();
+  const monthName = viewDate.toLocaleDateString('es-ES', {month:'long', year:'numeric'});
+
+  document.getElementById('habit-month-label').textContent =
+    monthName.charAt(0).toUpperCase() + monthName.slice(1);
+
+  const nextBtn = document.getElementById('habit-next-btn');
+  if (nextBtn) nextBtn.style.opacity = state._habitMonthOffset >= 0 ? '0.3' : '1';
+
+  const todayEl = document.getElementById('habit-today-label');
+  if (todayEl) todayEl.textContent = isCurrentMonth
+    ? 'Today - ' + now.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long'})
+    : 'Mes pasado - marcar days manualmente';
+
+  const cx = 300, cy = 300, innerR = 80, ringW = 42, gap = 6;
+  const startAngle = -90, segGap = 1.2;
+
+  function polarXY(r, angleDeg) {
+    const rad = (angleDeg - 90) * Math.PI / 180;
+    return [cx + r * Math.cos(rad), cy + r * Math.sin(rad)];
+  }
+  function arcPath(r1, r2, a1, a2) {
+    const [x1,y1] = polarXY(r2,a1), [x2,y2] = polarXY(r2,a2);
+    const [x3,y3] = polarXY(r1,a2), [x4,y4] = polarXY(r1,a1);
+    const lg = (a2-a1)>180?1:0;
+    return 'M'+x1+','+y1+' A'+r2+','+r2+',0,'+lg+',1,'+x2+','+y2+' L'+x3+','+y3+' A'+r1+','+r1+',0,'+lg+',0,'+x4+','+y4+' Z';
+  }
+
+  const degPerDay = 360 / daysInMonth;
+  let svg = '';
+
+  for (let h = 0; h < HABITS.length; h++) {
+    const r1 = innerR + h*(ringW+gap), r2 = r1+ringW;
+    svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+((r1+r2)/2)+'" fill="none" stroke="'+HABITS[h].color+'18" stroke-width="'+ringW+'"/>';
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const a1 = startAngle + (day-1)*degPerDay + segGap/2;
+    const a2 = startAngle + day*degPerDay - segGap/2;
+    const dk = year+'-'+String(month+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+    const dayData = userHabits()[dk] || {};
+    const isToday = isCurrentMonth && day === now.getDate();
+    const isFuture = isCurrentMonth && day > now.getDate();
+
+    for (let h = 0; h < HABITS.length; h++) {
+      const r1 = innerR + h*(ringW+gap), r2 = r1+ringW;
+      const done = dayData[HABITS[h].id];
+      const color = isFuture ? HABITS[h].color+'10' : done ? HABITS[h].color : HABITS[h].color+'25';
+      svg += '<path d="'+arcPath(r1+2,r2-2,a1,a2)+'" fill="'+color+'" stroke="var(--bg)" stroke-width="1"';
+      if (!isFuture) {
+        svg += ' style="cursor:pointer;" onclick="clickHabitSegment(\''+dk+'\',\''+HABITS[h].id+'\')"';
+      }
+      svg += '/>';
+    }
+
+    const labelR = innerR + HABITS.length*(ringW+gap) + 14;
+    const midAngle = startAngle + (day-0.5)*degPerDay;
+    const [lx,ly] = polarXY(labelR, midAngle);
+    const rot = midAngle + 90;
+    const fw  = isToday ? '800' : '400';
+    const fc  = isToday ? '#fff' : isFuture ? 'var(--border2)' : 'var(--text3)';
+    svg += '<text x="'+lx.toFixed(1)+'" y="'+ly.toFixed(1)+'" text-anchor="middle" dominant-baseline="middle" font-size="9" font-family="sans-serif" transform="rotate('+rot.toFixed(1)+','+lx.toFixed(1)+','+ly.toFixed(1)+')" fill="'+fc+'" font-weight="'+fw+'">'+day+'</text>';
+
+    if (isToday) {
+      const r1=innerR-4, r2=innerR+HABITS.length*(ringW+gap)+4;
+      const pa=arcPath(r1,r2,a1-0.5,a2+0.5);
+      svg = '<path d="'+pa+'" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>' + svg;
+    }
+  }
+
+  const todayDk = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  const todayData = userHabits()[todayDk] || {};
+  const doneTodayCount = isCurrentMonth ? HABITS.filter(h=>todayData[h.id]).length : '-';
+  const centerTop = isCurrentMonth ? doneTodayCount+'/4' : getMonthCompletionRate(year,month)+'%';
+  const centerBot = isCurrentMonth ? 'TODAY' : monthName.slice(0,3).toUpperCase();
+  svg += '<text x="'+cx+'" y="'+(cy-14)+'" text-anchor="middle" font-size="26" font-weight="800" font-family="sans-serif" fill="var(--text)">'+centerTop+'</text>';
+  svg += '<text x="'+cx+'" y="'+(cy+12)+'" text-anchor="middle" font-size="10" font-family="sans-serif" fill="var(--text3)">'+centerBot+'</text>';
+
+  document.getElementById('habit-svg').innerHTML = svg;
+
+  const checkinData = isCurrentMonth ? (userHabits()[todayDk]||{}) : {};
+  document.getElementById('habit-checkin-rows').innerHTML = HABITS.map(h => {
+    const done = checkinData[h.id];
+    const opacity = isCurrentMonth ? '1' : '0.4';
+    return '<div class="habit-row" style="opacity:'+opacity+';">' +
+      '<div><div class="habit-label"><span class="habit-dot" style="background:'+h.color+';"></span><span>'+h.emoji+' '+h.label+'</span></div></div>' +
+      '<button class="habit-toggle '+(done?'done':'')+'" '+(isCurrentMonth ? 'onclick="toggleHabit(\''+h.id+'\')"' : 'disabled')+
+        ' style="'+(done?'background:'+h.color+';border-color:'+h.color+';color:#000;':'')+'">'+
+        (done?'&#10003;':'')+
+      '</button></div>';
+  }).join('');
+
+  document.getElementById('habit-streaks').innerHTML = HABITS.map(h => {
+    const s = getStreak(h.id);
+    return '<div style="margin-bottom:10px;">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">'+
+        '<span style="font-size:12px;color:var(--text2);">'+h.emoji+' '+h.label+'</span>'+
+        '<span style="font-family:var(--font-d);font-size:13px;font-weight:700;color:'+h.color+';">'+s+' days</span>'+
+      '</div>'+
+      '<div style="height:4px;background:var(--bg3);border-radius:2px;">'+
+        '<div style="height:4px;background:'+h.color+';border-radius:2px;width:'+Math.min(100,(s/30)*100)+'%;transition:width 0.4s;"></div>'+
+      '</div></div>';
+  }).join('');
+
+  const mSumEl = document.getElementById('habit-month-summary');
+  if (mSumEl) {
+    mSumEl.innerHTML = HABITS.map(h => {
+      const rate = getHabitMonthRate(h.id, year, month);
+      return '<div style="margin-bottom:8px;">'+
+        '<div style="display:flex;justify-content:space-between;margin-bottom:3px;">'+
+          '<span style="font-size:12px;color:var(--text2);">'+h.emoji+' '+h.label+'</span>'+
+          '<span style="font-family:var(--font-d);font-size:12px;font-weight:700;color:'+h.color+';">'+rate+'%</span>'+
+        '</div>'+
+        '<div style="height:4px;background:var(--bg3);border-radius:2px;">'+
+          '<div style="height:4px;background:'+h.color+';border-radius:2px;width:'+rate+'%;"></div>'+
+        '</div></div>';
+    }).join('');
+  }
+
+  document.getElementById('habit-legend').innerHTML = HABITS.map((h,i) =>
+    '<div class="habit-legend-item"><div style="width:28px;height:10px;border-radius:2px;background:'+h.color+';flex-shrink:0;"></div>'+
+    '<span>Anillo '+(i+1)+' — '+h.label+'</span></div>'
+  ).join('');
+
+  renderHabitYear(year);
+}
+
+function clickHabitSegment(dateKey, habitId) {
+  const uh = userHabits();
+  if (!uh[dateKey]) uh[dateKey] = {};
+  uh[dateKey][habitId] = !uh[dateKey][habitId];
+  save();
+  renderHabits();
+}
+
+function renderHabitYear(year) {
+  const titleEl = document.getElementById('habit-year-title');
+  if (titleEl) titleEl.textContent = 'Annual summary ' + year;
+
+  const annualBarsEl = document.getElementById('habit-annual-bars');
+  if (annualBarsEl) {
+    annualBarsEl.innerHTML = HABITS.map(h => {
+      let totalDone = 0, totalDays = 0;
+      for (let m = 0; m < 12; m++) {
+        const now = new Date();
+        if (year > now.getFullYear() || (year === now.getFullYear() && m > now.getMonth())) break;
+        const dim = new Date(year, m+1, 0).getDate();
+        const isCurrentMonth = year === now.getFullYear() && m === now.getMonth();
+        const days = isCurrentMonth ? now.getDate() : dim;
+        for (let d = 1; d <= days; d++) {
+          const k = year+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+          totalDays++;
+          const uhY = userHabits(); if (uhY[k] && uhY[k][h.id]) totalDone++;
+        }
+      }
+      const rate = totalDays ? Math.round(totalDone/totalDays*100) : 0;
+      return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">'+
+        '<span style="font-size:12px;color:var(--text2);width:160px;flex-shrink:0;">'+h.emoji+' '+h.label+'</span>'+
+        '<div style="flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;">'+
+          '<div style="height:6px;background:'+h.color+';border-radius:3px;width:'+rate+'%;transition:width 0.5s;"></div>'+
+        '</div>'+
+        '<span style="font-family:var(--font-d);font-size:12px;font-weight:700;color:'+h.color+';width:36px;text-align:right;">'+rate+'%</span>'+
+      '</div>';
+    }).join('');
+  }
+
+  const gridEl = document.getElementById('habit-year-grid');
+  if (!gridEl) return;
+  const now = new Date();
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  gridEl.innerHTML = monthNames.map((mn, m) => {
+    const isFuture = year > now.getFullYear() || (year === now.getFullYear() && m > now.getMonth());
+    const isCurrent = year === now.getFullYear() && m === now.getMonth();
+    const rate = isFuture ? null : getMonthCompletionRate(year, m);
+    const rateDisplay = isFuture ? '—' : (rate + '%');
+    const color = rate === null ? 'var(--text3)' : rate >= 80 ? '#00e5a0' : rate >= 50 ? '#f59e0b' : '#ef4444';
+    const offset = (m - now.getMonth()) + (year - now.getFullYear()) * 12;
+    const isViewing = offset === state._habitMonthOffset;
+
+    return '<div class="month-mini" onclick="jumpToHabitMonth('+offset+')" style="border-color:'+(isViewing?'var(--accent)':isCurrent?'var(--border2)':'var(--border)')+';">'+
+      '<div class="month-mini-title" style="color:'+(isCurrent?'var(--text)':'var(--text2)')+';">'+mn+(isCurrent?' •':'')+'</div>'+
+      HABITS.map(h => {
+        const hr = isFuture ? 0 : getHabitMonthRate(h.id, year, m);
+        return '<div class="month-mini-bar"><div class="month-mini-fill" style="width:'+hr+'%;background:'+h.color+';"></div></div>';
+      }).join('')+
+      '<div class="month-mini-pct" style="color:'+color+';margin-top:4px;">'+rateDisplay+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+function jumpToHabitMonth(offset) {
+  state._habitMonthOffset = offset;
+  renderHabits();
+}
+
+// ==================== INIT ====================
+window.addEventListener('DOMContentLoaded', function() {
+  loadLocal();
+  renderDashboard();
+  renderOKRs();
+  setTaskView(state._taskView || 'kanban'); // inicializar toggle y renderizar tasks
+  renderTeam();
+  renderTimeline();
+  renderCRM();
+  renderHabits();
+  renderWeekly();
+});
+</script>
+</body>
+</html>
