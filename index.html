@@ -769,7 +769,11 @@
     </div>
     <div class="form-group"><label class="form-label">Objective relacionado</label>
       <select class="form-select" id="task-obj"><option value="">No objective asignado</option></select></div>
-    <select id="task-predecessors" style="display:none;"></select>
+    <div class="form-group">
+      <label class="form-label">Predecesoras <span style="font-size:11px;color:var(--text3);font-weight:400;text-transform:none;">(tareas que deben completarse antes)</span></label>
+      <select class="form-select" id="task-predecessors" multiple style="min-height:88px;font-size:13px;"></select>
+      <div style="font-size:11px;color:var(--text3);margin-top:5px;">Ctrl+click para seleccionar varias · ⊖ = pendiente &nbsp; ✓ = completada</div>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-task')">Cancel</button>
       <button class="btn btn-danger" id="task-delete-btn" style="display:none;" onclick="deleteTask()">Delete</button>
