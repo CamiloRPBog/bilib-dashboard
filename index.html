@@ -772,7 +772,7 @@
     <div class="form-group">
       <label class="form-label">Predecesoras <span style="font-size:11px;color:var(--text3);font-weight:400;text-transform:none;">(tareas que deben completarse antes)</span></label>
       <select class="form-select" id="task-predecessors" multiple style="min-height:88px;font-size:13px;"></select>
-      <div style="font-size:11px;color:var(--text3);margin-top:5px;">Ctrl+click para seleccionar varias · ⊖ = pendiente &nbsp; ✓ = completada</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:5px;">Ctrl+click para seleccionar varias · ✓ = completada &nbsp; ▶ = en progreso</div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-task')">Cancel</button>
@@ -970,8 +970,6 @@ function loadLocal() {
       state.weeks      = {};
       save();
     }
-    // Limpiar predecesores de todas las tareas (campo que no se usa)
-    state.tasks.forEach(function(t) { t.predecessors = []; });
 
     SHEET_URL = localStorage.getItem('bilib2026_url')||'';
     if (SHEET_URL) {
@@ -1007,8 +1005,6 @@ async function syncFromSheets() {
       if (s.leads      && s.leads.length)       state.leads      = s.leads;
       if (s.habits)                             state.habits     = s.habits;
       if (s.weeks)                              state.weeks      = s.weeks;
-        // Limpiar predecesores de todas las tareas
-      state.tasks.forEach(function(t) { t.predecessors = []; });
       // Guardar en localStorage sin disparar otro push
       try { localStorage.setItem('bilib2026_data', JSON.stringify({ objectives:state.objectives, tasks:state.tasks, team:state.team, leads:state.leads, habits:state.habits, weeks:state.weeks })); } catch(e){}
       // Si nunca se limpió en Sheets, hacer push una sola vez para limpiar la fuente de verdad
@@ -1073,11 +1069,8 @@ async function pushToSheets() {
     }
 
     // ── Push del estado ya mergeado ───────────────────────────────────────────
-    // Siempre limpiar predecesoras antes de enviar a Sheets (evita ciclos de datos corruptos)
     const cleanTasks = state.tasks.map(function(t) {
-      const ct = Object.assign({}, t);
-      ct.predecessors = [];
-      return ct;
+      return Object.assign({}, t);
     });
     const payload = { objectives:state.objectives, tasks:cleanTasks, team:state.team, leads:state.leads, habits:state.habits, weeks:state.weeks };
     const res = await fetch(SHEET_URL, {
@@ -1554,6 +1547,7 @@ function saveKR(){const name=document.getElementById('kr-name').value.trim();if(
 function deleteKR(){const o=state.objectives.find(x=>x.id===state._editKrObjId);if(!o||!state._editKrId)return;if(!confirm('Delete este Key Result?'))return;o.krs=o.krs.filter(k=>k.id!==state._editKrId);save();closeModal('modal-kr');renderCurrentView();}
 function _buildPredSelect(excludeId, selectedIds) {
   const sel = document.getElementById('task-predecessors');
+  if (!sel) return;
   const others = state.tasks.filter(t => t.id !== excludeId);
   sel.innerHTML = others.map(t => {
     const done = t.status === 'completed';
@@ -1590,7 +1584,7 @@ function openEditTask(id){
   document.getElementById('task-status').value=t.status||'pending';
   const sel=document.getElementById('task-obj');
   sel.innerHTML='<option value="">No objective</option>'+state.objectives.map(o=>'<option value="'+o.id+'"'+(t.objId===o.id?' selected':'')+'>'+o.name+'</option>').join('');
-  _buildPredSelect(id, []);
+  _buildPredSelect(id, t.predecessors||[]);
   document.getElementById('task-delete-btn').style.display='';
   openModal('modal-task');
 }
@@ -1598,7 +1592,7 @@ function saveTask(){
   const name=document.getElementById('task-name').value.trim();
   if(!name){alert('Name is required.');return;}
   const predSel=document.getElementById('task-predecessors');
-  const predecessors=Array.from(predSel.selectedOptions).map(o=>o.value);
+  const predecessors=predSel?Array.from(predSel.selectedOptions).map(o=>o.value):[];
   const data={name,desc:document.getElementById('task-desc').value.trim(),assignee:document.getElementById('task-assignee').value.trim(),due:document.getElementById('task-due').value,priority:document.getElementById('task-priority').value,status:document.getElementById('task-status').value,objId:document.getElementById('task-obj').value,predecessors};
   if(state._editTaskId){const t=state.tasks.find(x=>x.id===state._editTaskId);if(t)Object.assign(t,data);}
   else{state.tasks.push({id:uid(),...data});}
