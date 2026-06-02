@@ -771,8 +771,13 @@
       <select class="form-select" id="task-obj"><option value="">No objective asignado</option></select></div>
     <div class="form-group">
       <label class="form-label">Predecesoras <span style="font-size:11px;color:var(--text3);font-weight:400;text-transform:none;">(tareas que deben completarse antes)</span></label>
-      <select class="form-select" id="task-predecessors" multiple style="min-height:88px;font-size:13px;"></select>
-      <div style="font-size:11px;color:var(--text3);margin-top:5px;">Ctrl+click para seleccionar varias · ✓ = completada &nbsp; ▶ = en progreso</div>
+      <div id="pred-chips" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;margin-bottom:8px;"></div>
+      <div style="display:flex;gap:8px;">
+        <select class="form-select" id="pred-add-select" style="font-size:13px;">
+          <option value="">＋ Agregar predecesora...</option>
+        </select>
+      </div>
+      <input type="hidden" id="task-predecessors" value="[]"/>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modal-task')">Cancel</button>
@@ -968,6 +973,13 @@ function loadLocal() {
       state.leads      = SEED.leads;
       state.habits     = {};
       state.weeks      = {};
+      save();
+    }
+
+    // Migración v2: limpiar predecesoras corruptas (solo una vez)
+    if (!localStorage.getItem('bilib_pred_v2')) {
+      state.tasks.forEach(function(t) { t.predecessors = []; });
+      localStorage.setItem('bilib_pred_v2', '1');
       save();
     }
 
@@ -1546,15 +1558,59 @@ function openEditKR(objId,krId){const o=state.objectives.find(x=>x.id===objId);c
 function saveKR(){const name=document.getElementById('kr-name').value.trim();if(!name){alert('Description is required.');return;}const o=state.objectives.find(x=>x.id===state._editKrObjId);if(!o)return;const data={name,start:+document.getElementById('kr-start').value||0,target:+document.getElementById('kr-target').value||100,current:+document.getElementById('kr-current').value||0,unit:document.getElementById('kr-unit').value.trim(),status:document.getElementById('kr-status').value};if(state._editKrId){const kr=o.krs.find(k=>k.id===state._editKrId);if(kr)Object.assign(kr,data);}else{o.krs.push({id:uid(),...data});}save();closeModal('modal-kr');renderCurrentView();}
 function deleteKR(){const o=state.objectives.find(x=>x.id===state._editKrObjId);if(!o||!state._editKrId)return;if(!confirm('Delete este Key Result?'))return;o.krs=o.krs.filter(k=>k.id!==state._editKrId);save();closeModal('modal-kr');renderCurrentView();}
 function _buildPredSelect(excludeId, selectedIds) {
-  const sel = document.getElementById('task-predecessors');
-  if (!sel) return;
-  const others = state.tasks.filter(t => t.id !== excludeId);
-  sel.innerHTML = others.map(t => {
-    const done = t.status === 'completed';
-    const icon = done ? '✓' : (t.status === 'in-progress' ? '▶' : (t.status === 'blocked' ? '⛔' : '○'));
-    const isSelected = (selectedIds || []).includes(t.id);
-    return '<option value="'+t.id+'"'+(isSelected?' selected':'')+'>'+icon+' '+t.name+(t.assignee?' ('+t.assignee+')':'')+'</option>';
-  }).join('');
+  let _predIds = (selectedIds || []).slice();
+
+  function renderPredUI() {
+    // Hidden input con los IDs actuales
+    document.getElementById('task-predecessors').value = JSON.stringify(_predIds);
+
+    // Chips de predecesoras seleccionadas
+    const chipsEl = document.getElementById('pred-chips');
+    if (!chipsEl) return;
+    if (_predIds.length === 0) {
+      chipsEl.innerHTML = '<span style="font-size:12px;color:var(--text3);">Sin predecesoras</span>';
+    } else {
+      chipsEl.innerHTML = _predIds.map(pid => {
+        const pt = state.tasks.find(x => x.id === pid);
+        if (!pt) return '';
+        const done = pt.status === 'completed';
+        const color = done ? 'var(--accent)' : 'var(--amber)';
+        return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:4px 10px;border-radius:20px;background:var(--bg3);border:1px solid var(--border2);color:'+color+';">'
+          +(done?'✓ ':'⏳ ')
+          +pt.name.slice(0,30)
+          +'<button type="button" onclick="_predRemove(\''+pid+'\')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;line-height:1;padding:0 0 0 4px;" title="Quitar">×</button>'
+          +'</span>';
+      }).join('');
+    }
+
+    // Dropdown: solo tareas no seleccionadas y distintas a la que se edita
+    const sel = document.getElementById('pred-add-select');
+    if (!sel) return;
+    const available = state.tasks.filter(t => t.id !== excludeId && !_predIds.includes(t.id));
+    sel.innerHTML = '<option value="">＋ Agregar predecesora...</option>'
+      + available.map(t => {
+        const done = t.status === 'completed';
+        const icon = done ? '✓' : (t.status === 'in-progress' ? '▶' : '○');
+        return '<option value="'+t.id+'">'+icon+' '+t.name+(t.assignee?' ('+t.assignee+')':'')+'</option>';
+      }).join('');
+  }
+
+  // Exponer helpers globales para los onclick
+  window._predRemove = function(pid) {
+    _predIds = _predIds.filter(x => x !== pid);
+    renderPredUI();
+  };
+
+  const addSel = document.getElementById('pred-add-select');
+  if (addSel) {
+    addSel.onchange = function() {
+      if (!this.value) return;
+      if (!_predIds.includes(this.value)) _predIds.push(this.value);
+      renderPredUI();
+    };
+  }
+
+  renderPredUI();
 }
 function openAddTask(objId){
   state._editTaskId=null;
@@ -1591,8 +1647,8 @@ function openEditTask(id){
 function saveTask(){
   const name=document.getElementById('task-name').value.trim();
   if(!name){alert('Name is required.');return;}
-  const predSel=document.getElementById('task-predecessors');
-  const predecessors=predSel?Array.from(predSel.selectedOptions).map(o=>o.value):[];
+  const predRaw=document.getElementById('task-predecessors').value;
+  const predecessors=JSON.parse(predRaw||'[]');
   const data={name,desc:document.getElementById('task-desc').value.trim(),assignee:document.getElementById('task-assignee').value.trim(),due:document.getElementById('task-due').value,priority:document.getElementById('task-priority').value,status:document.getElementById('task-status').value,objId:document.getElementById('task-obj').value,predecessors};
   if(state._editTaskId){const t=state.tasks.find(x=>x.id===state._editTaskId);if(t)Object.assign(t,data);}
   else{state.tasks.push({id:uid(),...data});}
